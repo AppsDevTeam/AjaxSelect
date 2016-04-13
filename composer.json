@@ -1,0 +1,14 @@
+{
+	"name": "adt/ajax-select",
+	"description": "Nette extension for AJAX select controls.",
+	"type": "library",
+	"license": ["MIT", "BSD-3-Clause", "GPL-2.0", "GPL-3.0"],
+    "require": {
+        "nette/forms": "~2.3.0"
+    },
+	"autoload": {
+		"psr-4": {
+			"ADT\\": "src/"
+		}
+	}
+}
