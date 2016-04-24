@@ -5,7 +5,9 @@
 	"license": ["MIT", "BSD-3-Clause", "GPL-2.0", "GPL-3.0"],
     "require": {
         "nette/forms": "~2.3.0",
-		"nette/di": "~2.3.0"
+		"nette/di": "~2.3.0",
+		"nette/utils": "*",
+		"nette/application": "*"
     },
 	"autoload": {
 		"psr-4": {
