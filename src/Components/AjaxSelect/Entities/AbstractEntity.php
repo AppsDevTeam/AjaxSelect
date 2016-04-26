@@ -147,7 +147,7 @@ abstract class AbstractEntity extends \Nette\Object {
 	public function done() {
 		$control = $this->getControl();
 
-		if ($this->isDirty && $control) {
+		if (/*$this->isDirty && */$control) { // TODO: set dirty = TRUE on value change
 			/** @var \Nette\Application\UI\Presenter $presenter */
 			$presenter = $control->lookup(\Nette\Application\UI\Presenter::class, FALSE);
 
@@ -168,7 +168,6 @@ abstract class AbstractEntity extends \Nette\Object {
 							  )
 							: [],
 						'queryParam' => static::OPTION_QUERY,
-						'optionsParam' => '', // TODO $this->getUniqueId() . '-requestOptions',
 						'entityName' => $this->getName(),
 						'entityOptions' => $this->getOptions(),
 					]
