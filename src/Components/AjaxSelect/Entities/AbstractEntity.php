@@ -155,24 +155,29 @@ abstract class AbstractEntity extends \Nette\Object {
 				$getItemsSignal = $this->config['getItemsSignalName'];
 				$controlValue = $control->getValue();
 
-				$control->setAttribute(
-					static::DATA_ATTRIBUTE_NAME,
-					[
-						'url' => $presenter->link($getItemsSignal . '!', ['htmlId' => $control->getHtmlId()]),
-						'prompt' => $control->translate($control->getPrompt()),
-						'initialItems' => $controlValue
-							? $this->formatJsonValues(
-								is_array($controlValue)
-									? $controlValue
-									: [ $controlValue ]
-							  )
-							: [],
-						'queryParam' => static::OPTION_QUERY,
-						'entityName' => $this->getName(),
-						'entityOptions' => $this->getOptions(),
-					]
-				);
+				$data = [
+					'url' => $presenter->link($getItemsSignal . '!', ['htmlId' => $control->getHtmlId()]),
+					'initialItems' => $controlValue
+						? $this->formatJsonValues(
+							is_array($controlValue)
+								? $controlValue
+								: [ $controlValue ]
+						)
+						: [],
+					'queryParam' => static::OPTION_QUERY,
+					'entityName' => $this->getName(),
+					'entityOptions' => $this->getOptions(),
+				];
 
+				if ($control instanceof AjaxSelect\Interfaces\IPromptControl) {
+					$data['prompt'] = $control->translate($control->getPrompt());
+				}
+
+				if ($control instanceof AjaxSelect\Interfaces\IMultiSelectControl) {
+					$data['multiple'] = TRUE;
+				}
+
+				$control->setAttribute(static::DATA_ATTRIBUTE_NAME, $data);
 				$this->isDirty = FALSE;
 			}
 		}

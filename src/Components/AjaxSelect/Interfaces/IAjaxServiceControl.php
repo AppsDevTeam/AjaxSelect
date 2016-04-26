@@ -9,7 +9,6 @@ use ADT\Components\AjaxSelect;
 /**
  * @method \Nette\ComponentModel\IComponent lookup($name, $need = TRUE)
  * @method string getHtmlId()
- * @method string|NULL getPrompt()
  * @method $this setAttribute($name, $value)
  */
 interface IAjaxServiceControl extends \Nette\Forms\IControl {
