@@ -9,6 +9,7 @@ use ADT\Components\AjaxSelect;
  * @method array getOptions()
  * @method string getName()
  * @method $this setName($name)
+ * @method $this setBackValue(mixed $value)
  */
 abstract class AbstractEntity extends \Nette\Object {
 
@@ -30,6 +31,9 @@ abstract class AbstractEntity extends \Nette\Object {
 
 	/** @var AjaxSelect\Traits\AjaxServiceControlTrait|NULL */
 	protected $control = NULL;
+
+	/** @var mixed|NULL */
+	protected $backValue = NULL;
 
 	/**
 	 * @param array $options
@@ -186,9 +190,11 @@ abstract class AbstractEntity extends \Nette\Object {
 	}
 
 	/**
-	 * @return AjaxSelect\Interfaces\IAjaxServiceControl|NULL
+	 * @return AjaxSelect\Interfaces\IAjaxServiceControl|mixed|NULL
 	 */
 	public function back() {
-		return $this->done()->getControl();
+		$this->done();
+
+		return $this->backValue ?: $this->getControl();
 	}
 }
