@@ -4,7 +4,14 @@ namespace ADT\Components\AjaxSelect\DI;
 
 use ADT\Components\AjaxSelect;
 
+
 class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
+
+	const CONFIG_GET_ITEMS_SIGNAL_NAME = 'getItemsSignalName';
+
+	const CONFIG_INVALID_VALUE_MODE = 'invalidValueMode';
+	const INVALID_VALUE_MODE_EXCEPTION = 'exception';
+	const INVALID_VALUE_MODE_EMPTY = 'empty';
 
 	const AJAX_SERVICE_NAME = 'ajax';
 	const ENTITY_POOL_SERVICE_NAME = 'entityPool';
@@ -12,8 +19,9 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 	const ENTITY_FACTORY_TAG = 'ajax-select.entity-factory';
 
 	public function loadConfiguration() {
-		$config = $this->getConfig() + [
-			'getItemsSignalName' => 'getAjaxItems'
+		$this->config = $this->config + [
+			static::CONFIG_GET_ITEMS_SIGNAL_NAME => 'getAjaxItems',
+			static::CONFIG_INVALID_VALUE_MODE => static::INVALID_VALUE_MODE_EXCEPTION,
 		];
 
 		$builder = $this->getContainerBuilder();
@@ -25,7 +33,7 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 		// register ajax service
 		$builder->addDefinition($this->prefix(static::AJAX_SERVICE_NAME))
 			->setClass(AjaxSelect\Services\AjaxService::class)
-			->addSetup('setConfig', [ $config ]);
+			->addSetup('setConfig', [ $this->config ]);
 	}
 
 	public function beforeCompile() {
@@ -73,19 +81,23 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 	public function afterCompile(\Nette\PhpGenerator\ClassType $class) {
 		// register extension methods
 		$initialize = $class->getMethod('initialize');
-		$initialize->addBody(__CLASS__ . '::register($this);');
+		$initialize->addBody(__CLASS__ . '::register($this, ?);', [ $this->config ]);
 	}
 
-	public static function register(\Nette\DI\Container $container) {
+	public static function register(\Nette\DI\Container $container, $config) {
 		// lazy service getter
 		$serviceGetter = function () use ($container) {
 			return $container->getByType(AjaxSelect\Services\AjaxService::class);
 		};
 
 		// control factory factory :)
-		$factory = function ($class) use ($serviceGetter) {
-			return function (\Nette\Forms\Container $container, $name, $label = NULL, $entityName = NULL) use ($class, $serviceGetter) {
+		$factory = function ($class) use ($serviceGetter, $config) {
+			return function (\Nette\Forms\Container $container, $name, $label = NULL, $entityName = NULL) use ($class, $serviceGetter, $config) {
+				/** @var AjaxSelect\AjaxSelect|AjaxSelect\DynamicSelect|mixed $control */
 				$control = new $class($label);
+
+				// set invalid value mode
+				$control->setInvalidValueMode($config[static::CONFIG_INVALID_VALUE_MODE]);
 
 				if ($control instanceof AjaxSelect\Interfaces\IAjaxServiceControl) {
 					// inject ajax entity

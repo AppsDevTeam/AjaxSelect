@@ -156,7 +156,7 @@ abstract class AbstractEntity extends \Nette\Object {
 			$presenter = $control->lookup(\Nette\Application\UI\Presenter::class, FALSE);
 
 			if ($presenter) {
-				$getItemsSignal = $this->config['getItemsSignalName'];
+				$getItemsSignal = $this->config[AjaxSelect\DI\AjaxSelectExtension::CONFIG_GET_ITEMS_SIGNAL_NAME];
 				$controlValue = $control->getValue();
 
 				$data = [

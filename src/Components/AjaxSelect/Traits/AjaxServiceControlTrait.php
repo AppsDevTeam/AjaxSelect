@@ -7,16 +7,8 @@ use ADT\Components\AjaxSelect;
 
 trait AjaxServiceControlTrait {
 
-	/** @var array */
-	protected $ajaxConfig;
-
 	/** @var AjaxSelect\Entities\AbstractEntity */
 	protected $ajaxEntity;
-
-	public function setAjaxConfig(array $config) {
-		$this->ajaxConfig = $config;
-		return $this;
-	}
 
 	/**
 	 * @return string
@@ -38,7 +30,15 @@ trait AjaxServiceControlTrait {
 
 	protected function handleInvalidValue($value, $e) {
 		if (!$this->getAjaxEntity()->isValidValue($value)) {
-			throw $e;
+			switch ($this->getAjaxEntity()->getInvalidValueMode()) {
+				case AjaxSelect\Entities\AbstractEntity::INVALID_VALUE_MODE_EMPTY:
+					$this->value = NULL;
+					return $this;
+
+				case AjaxSelect\Entities\AbstractEntity::INVALID_VALUE_MODE_EXCEPTION:
+				default:
+					throw $e;
+			}
 		}
 
 		$items = $value;

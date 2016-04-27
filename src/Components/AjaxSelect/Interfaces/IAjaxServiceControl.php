@@ -14,12 +14,6 @@ use ADT\Components\AjaxSelect;
 interface IAjaxServiceControl extends \Nette\Forms\IControl {
 
 	/**
-	 * @param array $config
-	 * @return $this
-	 */
-	public function setAjaxConfig(array $config);
-
-	/**
 	 * @return string
 	 */
 	public function getAjaxEntityName();

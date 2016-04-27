@@ -25,6 +25,18 @@ abstract class AggregateEntity extends AbstractEntity {
 	}
 
 	/**
+	 * @param array $config
+	 * @return $this
+	 */
+	public function setConfig(array $config) {
+		foreach ($this->entities as $entity) {
+			$entity->setConfig($config);
+		}
+
+		return parent::setConfig($config);
+	}
+
+	/**
 	 * @return array
 	 */
 	public function getOptions() {
