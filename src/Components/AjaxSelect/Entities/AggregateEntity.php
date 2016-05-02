@@ -33,7 +33,8 @@ abstract class AggregateEntity extends AbstractEntity {
 			$entity->setConfig($config);
 		}
 
-		return parent::setConfig($config);
+		$this->config = $config;
+		return $this;
 	}
 
 	/**
