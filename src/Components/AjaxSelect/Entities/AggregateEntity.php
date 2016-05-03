@@ -235,13 +235,19 @@ abstract class AggregateEntity extends AbstractEntity {
 	 */
 	public function formatJsonValues($values) {
 		if (array_diff_key($values, $this->entities)) {
+			$grouped = TRUE;
 			$values = $this->groupByPrefix($values);
+		} else {
+			$grouped = FALSE;
 		}
 
 		$result = [ ];
 		foreach ($values as $prefix => $group) {
-			// use nested entity for formatting
-			$group = $this->groupByPrefix($group)[$prefix];
+			if (!$grouped) {
+				// use nested entity for formatting
+				$group = $this->groupByPrefix($group)[$prefix];
+			}
+
 			$children = $this->entities[$prefix]->formatJsonValues($group);
 
 			// prefix ids
