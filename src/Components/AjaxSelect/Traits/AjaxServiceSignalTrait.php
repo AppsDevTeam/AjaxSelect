@@ -10,10 +10,10 @@ use \ADT\Components\AjaxSelect;
 trait AjaxServiceSignalTrait {
 
 	/** @var AjaxSelect\Services\AjaxService @inject */
-	protected $ajaxService;
+	public $ajaxSelectService;
 
 	public function handleGetAjaxItems($entityName, array $entityOptions) {
-		$entity = $this->ajaxService->createEntity($entityName);
+		$entity = $this->ajaxSelectService->createEntity($entityName);
 		$entity->parseOptions($entityOptions);
 
 		$values = $entity->findValues(30);
