@@ -2,6 +2,8 @@
 
 namespace ADT\Components\AjaxSelect\Traits;
 
+use ADT\Components\AjaxSelect;
+
 trait ItemFactoryTrait {
 
 	/** @var callable|NULL */
@@ -23,24 +25,29 @@ trait ItemFactoryTrait {
 		return $this;
 	}
 
-	protected abstract function getItems();
-	protected abstract function setItems($items);
+	protected abstract function handleInvalidValues($value);
 
-	protected function handleInvalidValue($value, $e) {
+	/**
+	 * TODO: cannot handle multiple values
+	 * @param $values
+	 * @return mixed
+	 */
+	protected function processValues($values) {
 		if ($this->itemFactory === NULL) {
-			throw $e;
+			return $this->handleInvalidValues($values);
 		}
 
-		$item = call_user_func($this->itemFactory, $value);
+		$item = call_user_func($this->itemFactory, $values);
 
 		if (empty($item)) {
-			throw $e;
+			return $this->handleInvalidValues($values);
 		}
 
+		// add value to list of valid items
 		$items = $this->getItems();
-		$items[$value] = $item;
+		$items[$values] = $item;
 		$this->setItems($items);
 
-		return parent::setValue($value);
+		return $values;
 	}
 }

@@ -32,30 +32,49 @@ trait InvalidSetValueTrait {
 
 	protected abstract function getHttpData($type, $htmlTail = NULL);
 	protected abstract function isDisabled();
-	protected abstract function handleInvalidValue($value, $exception);
+
+	/**
+	 * Processes value that could not be assigned.
+	 * @param mixed|array $value
+	 * @return mixed|array Value to assign.
+	 */
+	protected abstract function processValues($value);
+
+	protected function handleInvalidValues($values) {
+		switch ($this->getInvalidValueMode()) {
+			case AjaxSelect\DI\AjaxSelectExtension::INVALID_VALUE_MODE_EXCEPTION:
+				throw new \Nette\InvalidArgumentException;
+
+			case AjaxSelect\DI\AjaxSelectExtension::INVALID_VALUE_MODE_EMPTY:
+				return $this instanceof AjaxSelect\Interfaces\IMultiSelectControl
+					? [ ] : NULL;
+				break;
+		}
+
+		return $this;
+	}
 
 	public function setValue($value) {
 		try {
-			// try assign value
+			// try to assign value
 			return parent::setValue($value);
-		} catch (\Nette\InvalidArgumentException $e) {
-			try {
-				// try create and assign value
-				return $this->handleInvalidValue($value, $e);
-			} catch (\Nette\InvalidArgumentException $e) {
-				// value is invalid and there is no way of assigning it
+		} catch (\Nette\InvalidArgumentException $e) {}
 
-				switch ($this->invalidValueMode) {
-					case AjaxSelect\DI\AjaxSelectExtension::INVALID_VALUE_MODE_EMPTY:
-						$this->value = NULL;
-						return $this;
-
-					case AjaxSelect\DI\AjaxSelectExtension::INVALID_VALUE_MODE_EXCEPTION:
-					default:
-						throw $e;
-				}
-			}
+		// make sure $value is an array
+		if (!is_array($value)) {
+			$value = [ $value ];
 		}
+
+		// try create and assign value
+		$value = $this->processValues($value);
+
+		// revert array to single value if needed
+		if (!$this instanceof AjaxSelect\Interfaces\IMultiSelectControl) {
+			$value = reset($value);
+		}
+
+		// try to assign value
+		return parent::setValue($value);
 	}
 
 }
