@@ -5,6 +5,7 @@ namespace ADT\Components\AjaxSelect\Entities;
 use ADT\Components\AjaxSelect;
 
 /**
+ * @method array getConfig()
  * @method $this setConfig(array $config)
  * @method array getOptions()
  * @method string getName()

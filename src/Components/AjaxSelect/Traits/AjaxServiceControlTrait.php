@@ -30,12 +30,12 @@ trait AjaxServiceControlTrait {
 
 	protected function handleInvalidValue($value, $e) {
 		if (!$this->getAjaxEntity()->isValidValue($value)) {
-			switch ($this->getAjaxEntity()->getInvalidValueMode()) {
-				case AjaxSelect\Entities\AbstractEntity::INVALID_VALUE_MODE_EMPTY:
+			switch ($this->getAjaxEntity()->getConfig()[AjaxSelect\DI\AjaxSelectExtension::CONFIG_INVALID_VALUE_MODE]) {
+				case AjaxSelect\DI\AjaxSelectExtension::INVALID_VALUE_MODE_EMPTY:
 					$this->value = NULL;
 					return $this;
 
-				case AjaxSelect\Entities\AbstractEntity::INVALID_VALUE_MODE_EXCEPTION:
+				case AjaxSelect\DI\AjaxSelectExtension::INVALID_VALUE_MODE_EXCEPTION:
 				default:
 					throw $e;
 			}
