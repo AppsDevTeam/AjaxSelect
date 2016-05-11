@@ -28,33 +28,35 @@ trait AjaxServiceControlTrait {
 		$this->ajaxEntity = $ajaxEntity;
 	}
 
-	protected function handleInvalidValue($value, $e) {
-		if (!$this->getAjaxEntity()->isValidValue($value)) {
-			switch ($this->getAjaxEntity()->getConfig()[AjaxSelect\DI\AjaxSelectExtension::CONFIG_INVALID_VALUE_MODE]) {
-				case AjaxSelect\DI\AjaxSelectExtension::INVALID_VALUE_MODE_EMPTY:
-					$this->value = NULL;
-					return $this;
+	protected abstract function handleInvalidValues($values);
 
-				case AjaxSelect\DI\AjaxSelectExtension::INVALID_VALUE_MODE_EXCEPTION:
-				default:
-					throw $e;
+	/**
+	 * Processes value that could not be assigned.
+	 * @param mixed|array $values
+	 * @return mixed|array Value to assign.
+	 */
+	protected function processValues($values) {
+		$validValues = [ ];
+		$invalidValues = [ ];
+
+		foreach ($this->getAjaxEntity()->areValidValues($values) as $value => $isValid) {
+			if ($isValid) {
+				$validValues[] = $value;
+			} else {
+				$invalidValues[] = $value;
 			}
 		}
 
-		$items = $value;
-
-		// ensure $items is array
-		if (!is_array($items)) {
-			$items = [ $items ];
+		if (count($invalidValues) > 0) {
+			$validValues = array_merge($validValues, $this->handleInvalidValues($invalidValues) ?: [ ]);
 		}
 
-		// list of ids combine to identity array i.e. key = value
-		$items = array_combine($items, $items);
+		// combine list of ids to identity array i.e. key = value
+		$items = array_combine($validValues, $validValues);
 
-		// set items and value
-		$this->setItems($items);
-		$this->value = $value;
+		// add to list of valid values
+		$this->setItems($this->getItems() + $items);
 
-		return $this;
+		return $validValues;
 	}
 }
