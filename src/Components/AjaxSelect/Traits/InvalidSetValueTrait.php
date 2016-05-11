@@ -70,7 +70,9 @@ trait InvalidSetValueTrait {
 
 		// revert array to single value if needed
 		if (!$this instanceof AjaxSelect\Interfaces\IMultiSelectControl) {
-			$value = reset($value);
+			$value = count($value)
+				? $value[0]
+				: NULL;
 		}
 
 		// try to assign value
