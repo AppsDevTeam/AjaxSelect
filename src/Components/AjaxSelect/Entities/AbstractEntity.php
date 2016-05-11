@@ -66,26 +66,17 @@ abstract class AbstractEntity extends \Nette\Object {
 	 * @param array $values
 	 * @return bool[] $value => $isValid
 	 */
-	public function areValidValues($values) {
-		$result = [ ];
-
-		if (!is_array($values)) {
-			$values = [ $values ];
-		}
-
-		foreach ($values as $value) {
-			$result[$value] = $this->isValidValue($value);
-		}
-
-		return $result;
-	}
+	public abstract function areValidValues(array $values);
 
 	/**
 	 * @internal
 	 * @param mixed $value
 	 * @return bool
 	 */
-	public abstract function isValidValue($value);
+	public function isValidValue($value) {
+		$areValid = $this->areValidValues([ $value ]);
+		return !empty($areValid[$value]);
+	}
 
 	/**
 	 * @internal

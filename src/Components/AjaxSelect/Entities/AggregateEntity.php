@@ -163,29 +163,29 @@ abstract class AggregateEntity extends AbstractEntity {
 		return $prefix . $this->prefixSeparator . $value;
 	}
 
-	/**
-	 * @internal
-	 * @param mixed|array $value
-	 * @return bool
-	 */
-	public function isValidValue($value) {
-		$byPrefix = $this->groupByPrefix($value);
+	public function areValidValues(array $values) {
+		// all values are invalid by default
+		$result = array_combine($values, array_fill(0, count($values), FALSE));
 
+		$byPrefix = $this->groupByPrefix($values);
 		if ($byPrefix === FALSE) {
-			return FALSE;
+			// invalid prefix(es), sorry
+			return $result;
 		}
 
-		// check if all nested entities report their values as valid
-		foreach ($byPrefix as $prefix => $values) {
+		foreach ($byPrefix as $prefix => $nestedValues) {
 			$entity = $this->entities[$prefix];
+			$areValid = $entity->areValidValues($nestedValues);
 
-			if (!$entity->isValidValue($values)) {
-				// if at least one does not, value is invalid
-				return FALSE;
+			foreach ($areValid as $value => $isValid) {
+				if ($isValid) {
+					$key = $this->prefix($prefix, $value);
+					$result[$key] = TRUE;
+				}
 			}
 		}
 
-		return TRUE;
+		return $result;
 	}
 
 	/**
