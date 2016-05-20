@@ -80,9 +80,9 @@ abstract class AggregateEntity extends AbstractEntity {
 	protected abstract function getGroupTitle($prefix);
 
 	/**
-	 * Groups values by known prefixes.
+	 * Groups values by known prefixes, ignores unknown prefixes.
 	 * @param $value
-	 * @return array|bool
+	 * @return array
 	 */
 	protected function groupByPrefix($value) {
 		if (!is_array($value)) {
@@ -117,7 +117,6 @@ abstract class AggregateEntity extends AbstractEntity {
 			}
 
 			// value has invalid prefix or no prefix at all -> it's invalid
-			return FALSE;
 		}
 
 		return $byPrefix;
@@ -168,11 +167,6 @@ abstract class AggregateEntity extends AbstractEntity {
 		$result = array_combine($values, array_fill(0, count($values), FALSE));
 
 		$byPrefix = $this->groupByPrefix($values);
-		if ($byPrefix === FALSE) {
-			// invalid prefix(es), sorry
-			return $result;
-		}
-
 		foreach ($byPrefix as $prefix => $nestedValues) {
 			$entity = $this->entities[$prefix];
 			$areValid = $entity->areValidValues($nestedValues);
