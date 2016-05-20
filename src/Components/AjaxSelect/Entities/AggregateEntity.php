@@ -60,11 +60,11 @@ abstract class AggregateEntity extends AbstractEntity {
 		foreach ($this->entities as $prefix => $entity) {
 			if (isset($options[$prefix])) {
 				$entity->setOptions($options[$prefix]);
+			}
 
-				// pass query parameter to nested entities
-				if (($value = $this->get(static::OPTION_QUERY)) !== NULL) {
-					$entity->set(static::OPTION_QUERY, $value);
-				}
+			// pass query parameter to nested entities
+			if (($value = $this->get(static::OPTION_QUERY)) !== NULL) {
+				$entity->set(static::OPTION_QUERY, $value);
 			}
 		}
 
