@@ -28,29 +28,33 @@ class AjaxService extends \Nette\Object {
 	}
 
 	/**
-	 * @param string $entityName
+	 * @param string|AjaxSelect\Entities\AbstractEntity $entityName
 	 * @param AjaxSelect\Interfaces\IAjaxServiceControl $clientControl
 	 * @return AjaxSelect\Entities\AbstractEntity
 	 */
 	public function createEntity($entityName, AjaxSelect\Interfaces\IAjaxServiceControl $clientControl = NULL) {
-		// check factory
-		if (!isset($this->entityFactories[$entityName])) {
-			throw new \Nette\InvalidArgumentException("Unknown entity name: $entityName");
-		}
+		if ($entityName instanceof AjaxSelect\Entities\AbstractEntity) {
+			$entity = $entityName;
+		} else {
+			// check factory
+			if (!isset($this->entityFactories[$entityName])) {
+				throw new \Nette\InvalidArgumentException("Unknown entity name: $entityName");
+			}
 
-		// create instance
-		$entity = $this->entityFactories[$entityName]->create();
+			// create instance
+			$entity = $this->entityFactories[$entityName]->create();
 
-		// check entity type
-		if (!$entity instanceof AjaxSelect\Entities\AbstractEntity) {
-			throw new \Nette\InvalidStateException("Entity $entityName must inherit from " . AjaxSelect\Entities\AbstractEntity::class);
+			// check entity type
+			if (!$entity instanceof AjaxSelect\Entities\AbstractEntity) {
+				throw new \Nette\InvalidStateException("Entity $entityName must inherit from " . AjaxSelect\Entities\AbstractEntity::class);
+			}
+
+			// set entity name
+			$entity->setName($entityName);
 		}
 
 		// set config
 		$entity->setConfig($this->config);
-
-		// set entity name
-		$entity->setName($entityName);
 
 
 		if ($clientControl) {
