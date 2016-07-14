@@ -92,24 +92,43 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 
 		// control factory factory :)
 		$factory = function ($class) use ($serviceGetter, $config) {
-			return function (\Nette\Forms\Container $container, $name, $label = NULL, $entityName = NULL) use ($class, $serviceGetter, $config) {
-				/** @var AjaxSelect\AjaxSelect|AjaxSelect\DynamicSelect|mixed $control */
-				$control = new $class($label);
 
-				// set invalid value mode
-				$control->setInvalidValueMode($config[static::CONFIG_INVALID_VALUE_MODE]);
+			if (in_array($class, [AjaxSelect\AjaxSelect::class, AjaxSelect\AjaxMultiSelect::class])) {
+				// pro ajax entity
+				return function (\Nette\Forms\Container $container, $name, $label = NULL, $entityName = NULL) use ($class, $serviceGetter, $config) {
+					/** @var AjaxSelect\AjaxSelect|AjaxSelect\DynamicSelect|mixed $control */
+					$control = new $class($label);
 
-				if ($control instanceof AjaxSelect\Interfaces\IAjaxServiceControl) {
+					// set invalid value mode
+					$control->setInvalidValueMode($config[static::CONFIG_INVALID_VALUE_MODE]);
+
 					// inject ajax entity
 
 					/** @var AjaxSelect\Services\AjaxService $ajaxService */
 					$ajaxService = $serviceGetter();
-					$ajaxEntity = $ajaxService->createEntity($entityName ?: $name, $control);
+					$ajaxEntity = $ajaxService->createEntity($entityName ? : $name, $control);
 					$control->setAjaxEntity($ajaxEntity);
-				}
 
-				return $container[$name] = $control;
-			};
+					return $container[$name] = $control;
+				};
+
+			} elseif (in_array($class, [AjaxSelect\DynamicSelect::class, AjaxSelect\DynamicMultiSelect::class])) {
+
+				// pro dymanic select
+				return function (\Nette\Forms\Container $container, $name, $label = NULL, $items = NULL, $itemFactory = NULL) use ($class, $serviceGetter, $config) {
+					/** @var AjaxSelect\AjaxSelect|AjaxSelect\DynamicSelect|mixed $control */
+					$control = new $class($label, $items);
+
+					// set invalid value mode
+					$control->setInvalidValueMode($config[static::CONFIG_INVALID_VALUE_MODE]);
+
+					$control->setItemFactory($itemFactory);
+
+					return $container[$name] = $control;
+				};
+			} else {
+				throw new Nette\InvalidArgumentException;
+			}
 		};
 
 		// register control factories
