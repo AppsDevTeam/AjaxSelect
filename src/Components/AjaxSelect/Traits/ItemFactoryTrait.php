@@ -45,7 +45,14 @@ trait ItemFactoryTrait {
 
 		// add value to list of valid items
 		$items = $this->getItems();
-		$items[$values] = $item;
+
+		if (is_array($item)) {
+			$items = array_merge($items, $item);
+
+		} else {
+			$items[$values] = $item;
+		}
+
 		$this->setItems($items);
 
 		return $values;
