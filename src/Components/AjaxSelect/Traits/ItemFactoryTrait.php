@@ -51,7 +51,7 @@ trait ItemFactoryTrait {
 		$items = $this->getItems();
 
 		if (is_array($item)) {
-			$items = array_merge($items, $item);
+			$items = $items + $item;
 
 		} else {
 			$items[$values] = $item;
