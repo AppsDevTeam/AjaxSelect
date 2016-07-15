@@ -37,6 +37,10 @@ trait ItemFactoryTrait {
 			return $this->handleInvalidValues($values);
 		}
 
+		if (!$this instanceof AjaxSelect\Interfaces\IMultiSelectControl && is_array($values)) {
+			$values = reset($values);
+		}
+
 		$item = call_user_func($this->itemFactory, $values);
 
 		if (empty($item)) {

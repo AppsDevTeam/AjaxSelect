@@ -61,7 +61,7 @@ trait InvalidSetValueTrait {
 		} catch (\Nette\InvalidArgumentException $e) {}
 
 		// make sure $value is an array
-		if ($this instanceof AjaxSelect\Interfaces\IMultiSelectControl && !is_array($value)) {
+		if (!is_array($value)) {
 			$value = [ $value ];
 		}
 
