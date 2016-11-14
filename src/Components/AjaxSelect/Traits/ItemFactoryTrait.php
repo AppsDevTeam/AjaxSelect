@@ -30,7 +30,7 @@ trait ItemFactoryTrait {
 	/**
 	 * TODO: cannot handle multiple values
 	 * @param $values
-	 * @return mixed
+	 * @return array
 	 */
 	protected function processValues($values) {
 		if ($this->itemFactory === NULL) {
@@ -58,6 +58,10 @@ trait ItemFactoryTrait {
 		}
 
 		$this->setItems($items);
+		
+		if (!is_array($values)) {
+			$values = [ $values ];
+		}
 
 		return $values;
 	}
