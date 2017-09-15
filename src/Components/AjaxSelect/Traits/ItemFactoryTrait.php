@@ -43,7 +43,7 @@ trait ItemFactoryTrait {
 
 		$item = call_user_func($this->itemFactory, $values);
 
-		if (empty($item)) {
+		if ($item === NULL || $item === []) {
 			return $this->handleInvalidValues($values);
 		}
 
