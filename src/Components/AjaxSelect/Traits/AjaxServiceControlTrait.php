@@ -48,24 +48,20 @@ trait AjaxServiceControlTrait {
 		}
 
 		if (count($invalidValues) > 0) {
-			$validValues = array_merge($validValues, $this->handleInvalidValues($invalidValues) ?: [ ]);
+			$invalidValues = $this->handleInvalidValues($invalidValues) ?: [ ];
+
+			$validValues = array_merge($validValues, $invalidValues);
 		}
 
-		// combine list of ids to identity array i.e. key = value
-		$items = array_combine($validValues, $validValues);
+		$validItems = $this->getAjaxEntity()->formatValues($validValues);
+		if (is_iterable($validItems)) {
+			$validItems = iterator_to_array($validItems);
+		}
 
 		// add to list of valid values
-		$this->setItems($this->getItems() + $items);
+		$this->setItems($this->getItems() + $validItems);
 
 		return $validValues;
 	}
 
-	public function setDefaultValue($value)
-	{
-		if (!$this->getForm()->isSubmitted()) {
-			$items = iterator_to_array($this->getAjaxEntity()->formatValues((array) $value));
-			$this->setItems($items);
-		}
-		parent::setDefaultValue($value);
-	}
 }
