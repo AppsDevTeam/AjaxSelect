@@ -59,4 +59,13 @@ trait AjaxServiceControlTrait {
 
 		return $validValues;
 	}
+
+	public function setDefaultValue($value)
+	{
+		if (!$this->getForm()->isSubmitted()) {
+			$items = iterator_to_array($this->getAjaxEntity()->formatValues((array) $value));
+			$this->setItems($items);
+		}
+		parent::setDefaultValue($value);
+	}
 }
