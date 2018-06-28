@@ -203,28 +203,49 @@ abstract class AbstractEntity {
 		return $this->backValue ?: $this->getControl();
 	}
 
+	/**
+	 * @param string $name
+	 * @return $this
+	 */
 	public function setName($name) {
 		$this->name = $name;
 		return $this;
 	}
 
+	/**
+	 * @param array $config
+	 * @return $this
+	 */
 	public function setConfig(array $config) {
 		$this->config = $config;
 		return $this;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function getConfig() {
 		return $this->config;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getName() {
 		return $this->name;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function getOptions() {
 		return $this->options;
 	}
 
+	/**
+	 * @param $value
+	 * @return $this
+	 */
 	public function setBackValue($value) {
 		$this->backValue = $value;
 		return $this;
