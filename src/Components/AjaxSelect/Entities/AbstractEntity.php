@@ -160,7 +160,6 @@ abstract class AbstractEntity {
 		if (/*$this->isDirty && */$control) { // TODO: set dirty = TRUE on value change
 			/** @var \Nette\Application\UI\Presenter $presenter */
 			$presenter = $control->lookup(\Nette\Application\UI\Presenter::class, FALSE);
-			bd($presenter);
 			if ($presenter) {
 				$getItemsSignal = $this->config[AjaxSelect\DI\AjaxSelectExtension::CONFIG_GET_ITEMS_SIGNAL_NAME];
 				$controlValue = $control->getValue();
