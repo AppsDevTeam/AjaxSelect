@@ -54,9 +54,6 @@ trait AjaxServiceControlTrait {
 		}
 
 		$validItems = $this->getAjaxEntity()->formatValues($validValues);
-		if (is_iterable($validItems)) {
-			$validItems = iterator_to_array($validItems);
-		}
 
 		// add to list of valid values
 		$this->setItems($this->getItems() + $validItems);
