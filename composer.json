@@ -6,7 +6,7 @@
     "require": {
         "nette/forms": "^2.3",
 		"nette/di": "^2.3",
-		"nette/utils": "*",
+		"nette/utils": "^2.4",
 		"nette/application": "*"
     },
 	"autoload": {

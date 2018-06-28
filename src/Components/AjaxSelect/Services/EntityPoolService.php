@@ -3,11 +3,14 @@
 namespace ADT\Components\AjaxSelect\Services;
 
 use ADT\Components\AjaxSelect;
+use Nette\SmartObject;
 
 /**
  * @method void onAdd(AjaxSelect\Entities\AbstractEntity $entity)
  */
-class EntityPoolService extends \Nette\Object {
+class EntityPoolService {
+
+	use SmartObject;
 
 	/** @var callable[] */
 	public $onAdd = [ ];

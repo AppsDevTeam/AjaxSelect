@@ -3,16 +3,11 @@
 namespace ADT\Components\AjaxSelect\Entities;
 
 use ADT\Components\AjaxSelect;
+use Nette\SmartObject;
 
-/**
- * @method array getConfig()
- * @method $this setConfig(array $config)
- * @method array getOptions()
- * @method string getName()
- * @method $this setName($name)
- * @method $this setBackValue(mixed $value)
- */
-abstract class AbstractEntity extends \Nette\Object {
+abstract class AbstractEntity {
+
+	use SmartObject;
 
 	const DATA_ATTRIBUTE_NAME = 'data-ajax-select';
 
@@ -165,7 +160,7 @@ abstract class AbstractEntity extends \Nette\Object {
 		if (/*$this->isDirty && */$control) { // TODO: set dirty = TRUE on value change
 			/** @var \Nette\Application\UI\Presenter $presenter */
 			$presenter = $control->lookup(\Nette\Application\UI\Presenter::class, FALSE);
-
+			bd($presenter);
 			if ($presenter) {
 				$getItemsSignal = $this->config[AjaxSelect\DI\AjaxSelectExtension::CONFIG_GET_ITEMS_SIGNAL_NAME];
 				$controlValue = $control->getValue();
@@ -208,4 +203,32 @@ abstract class AbstractEntity extends \Nette\Object {
 
 		return $this->backValue ?: $this->getControl();
 	}
+
+	public function setName($name) {
+		$this->name = $name;
+		return $this;
+	}
+
+	public function setConfig(array $config) {
+		$this->config = $config;
+		return $this;
+	}
+
+	public function getConfig() {
+		return $this->config;
+	}
+
+	public function getName() {
+		return $this->name;
+	}
+
+	public function getOptions() {
+		return $this->options;
+	}
+
+	public function setBackValue($value) {
+		$this->backValue = $value;
+		return $this;
+	}
+
 }

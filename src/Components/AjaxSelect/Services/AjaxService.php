@@ -3,11 +3,11 @@
 namespace ADT\Components\AjaxSelect\Services;
 
 use ADT\Components\AjaxSelect;
+use Nette\SmartObject;
 
-/**
- * @method $this setConfig(array $config)
- */
-class AjaxService extends \Nette\Object {
+class AjaxService {
+
+	use SmartObject;
 
 	/** @var array */
 	protected $config;
@@ -66,5 +66,9 @@ class AjaxService extends \Nette\Object {
 		}
 
 		return $entity;
+	}
+
+	public function setConfig(array $config) {
+		$this->config = $config;
 	}
 }
