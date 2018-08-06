@@ -80,5 +80,9 @@ trait InvalidSetValueTrait {
 		// try to assign value
 		return parent::setValue($value);
 	}
+	
+	public function getValue() {
+		return parent::getValue();
+	}
 
 }
