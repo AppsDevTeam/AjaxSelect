@@ -35,14 +35,22 @@ Disclaimer: This extension and/or its documentation is nowhere near complete. Pr
 
 This extension adds following methods to `Nette\Forms\Container` and thus to all derived classes:
 
-- `addDynamicSelect($name, $title, $items, $itemFactory)`
+- `addDynamicSelect($name, $title, $items, $itemFactory = null, $config = [])`
     - dynamic select with one value
-- `addDynamicMultiSelect($name, $title, $items, $itemFactory)`
+- `addDynamicMultiSelect($name, $title, $items, $itemFactory = null, $config = [])`
     - dynamic select with multiple values
-- `addAjaxSelect($name, $title, $entityName = $name)`
+- `addAjaxSelect($name, $title, $entityName = $name, $config = [])`
     - ajax select with one value
-- `addAjaxMultiSelect($name, $title, $entityName = $name)`
+- `addAjaxMultiSelect($name, $title, $entityName = $name, $config = [])`
     - ajax select with multiple values
+   
+### Config
+
+```php
+[
+	AjaxSelectExtension::CONFIG_INVALID_VALUE_MODE => AjaxSelectExtension::INVALID_VALUE_MODE_*,
+]
+```
 
 ### Dynamic Select
 

@@ -84,20 +84,22 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 		$initialize->addBody(__CLASS__ . '::register($this, ?);', [ $this->config ]);
 	}
 
-	public static function register(\Nette\DI\Container $container, $config) {
+	public static function register(\Nette\DI\Container $container, $globalConfig) {
 		// lazy service getter
 		$serviceGetter = function () use ($container) {
 			return $container->getByType(AjaxSelect\Services\AjaxService::class);
 		};
 
 		// control factory factory :)
-		$factory = function ($class) use ($serviceGetter, $config) {
+		$factory = function ($class) use ($serviceGetter, $globalConfig) {
 
 			if (in_array($class, [AjaxSelect\AjaxSelect::class, AjaxSelect\AjaxMultiSelect::class])) {
 				// pro ajax entity
-				return function (\Nette\Forms\Container $container, $name, $label = NULL, $entityName = NULL) use ($class, $serviceGetter, $config) {
+				return function (\Nette\Forms\Container $container, $name, $label = NULL, $entityName = NULL, $config = []) use ($class, $serviceGetter, $globalConfig) {
 					/** @var AjaxSelect\AjaxSelect|AjaxSelect\DynamicSelect|mixed $control */
 					$control = new $class($label);
+
+					$config = array_intersect_key($config, array_flip([static::CONFIG_INVALID_VALUE_MODE])) + $globalConfig;
 
 					// set invalid value mode
 					$control->setInvalidValueMode($config[static::CONFIG_INVALID_VALUE_MODE]);
@@ -115,9 +117,11 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 			} elseif (in_array($class, [AjaxSelect\DynamicSelect::class, AjaxSelect\DynamicMultiSelect::class])) {
 
 				// pro dymanic select
-				return function (\Nette\Forms\Container $container, $name, $label = NULL, $items = NULL, $itemFactory = NULL) use ($class, $serviceGetter, $config) {
+				return function (\Nette\Forms\Container $container, $name, $label = NULL, $items = NULL, $itemFactory = NULL, $config = []) use ($class, $serviceGetter, $globalConfig) {
 					/** @var AjaxSelect\AjaxSelect|AjaxSelect\DynamicSelect|mixed $control */
 					$control = new $class($label, $items);
+
+					$config = array_intersect_key($config, array_flip([static::CONFIG_INVALID_VALUE_MODE])) + $globalConfig;
 
 					// set invalid value mode
 					$control->setInvalidValueMode($config[static::CONFIG_INVALID_VALUE_MODE]);
