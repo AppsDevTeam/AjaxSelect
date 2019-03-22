@@ -38,7 +38,11 @@ class AjaxService {
 		} else {
 			// check factory
 			if (!isset($this->entityFactories[$entityName])) {
-				throw new \Nette\InvalidArgumentException("Unknown entity name: $entityName");
+				$entityName = preg_replace('/(es|ies|s)$/', '', $entityName);
+
+				if (!isset($this->entityFactories[$entityName])) {
+					throw new \Nette\InvalidArgumentException("Unknown entity name: $entityName");
+				}
 			}
 
 			// create instance
