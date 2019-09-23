@@ -4,9 +4,9 @@
 	"type": "library",
 	"license": ["MIT", "BSD-3-Clause", "GPL-2.0", "GPL-3.0"],
     "require": {
-        "nette/forms": "^2.3",
-		"nette/di": "^2.3",
-		"nette/utils": "^2.4",
+        "nette/forms": "^2.3 || ^3.0",
+		"nette/di": "^2.3 || ^3.0",
+		"nette/utils": "^2.4 || ^3.0",
 		"nette/application": "*"
     },
 	"autoload": {
