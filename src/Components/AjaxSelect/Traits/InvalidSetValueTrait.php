@@ -30,7 +30,7 @@ trait InvalidSetValueTrait {
 		return $this;
 	}
 
-	protected abstract function getHttpData($type, $htmlTail = NULL);
+	protected abstract function getHttpData($type, ?string $htmlTail = NULL);
 	protected abstract function isDisabled();
 
 	/**
