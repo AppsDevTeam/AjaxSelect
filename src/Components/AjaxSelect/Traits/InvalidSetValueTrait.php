@@ -80,9 +80,20 @@ trait InvalidSetValueTrait {
 		// try to assign value
 		return parent::setValue($value);
 	}
-	
-	public function getValue() {
-		return parent::getValue();
+
+	/**
+	 * Return type of `getValue` differs based on where is it used and because of strict typing, getValue can't
+	 * be implemented directly (return type of parent::getValue differs).
+	 *
+	 * @param string $name
+	 * @return mixed
+	 */
+	public function &__get(string $name) {
+		if ($name == 'value') {
+			$val = parent::getValue();
+			return $val;
+		}
+		return parent::__get($name);
 	}
 
 }
