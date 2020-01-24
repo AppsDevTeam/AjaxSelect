@@ -135,6 +135,14 @@ $form->addAjaxSelect('inactiveUser', 'Please select inactive user', 'user')
         ->active(FALSE);
 ```
 
+Finally you have to call finalizing ajaxSelect after the form is attached to presenter.
+For example you can do it in your `BaseForm::attached($presenter)`
+
+```php
+/** @var \ADT\Components\AjaxSelect\Services\EntityPoolService $ajaxEntityPoolService */
+$ajaxEntityPoolService->invokeDone();
+```
+
 You can omit third argument of `addAjaxSelect` or `addAjaxMultiSelect` if it's equal to control name (ie. first argument).
 
 Calling `getAjaxEntity()` on AjaxSelect returns instance of your AjaxEntity.
