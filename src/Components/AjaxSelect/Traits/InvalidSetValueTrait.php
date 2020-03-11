@@ -26,6 +26,11 @@ trait InvalidSetValueTrait {
 	 * @return $this
 	 */
 	public function setInvalidValueMode($mode) {
+
+		if (!in_array($mode, [AjaxSelect\DI\AjaxSelectExtension::INVALID_VALUE_MODE_EXCEPTION, AjaxSelect\DI\AjaxSelectExtension::INVALID_VALUE_MODE_EMPTY])) {
+			throw new \InvalidArgumentException("Invalid parameter mode, use one of AjaxSelect\DI\AjaxSelectExtension::INVALID_VALUE_MODE_*.");
+		}
+
 		$this->invalidValueMode = $mode;
 		return $this;
 	}
@@ -52,8 +57,6 @@ trait InvalidSetValueTrait {
 					? [ ] : NULL;
 				break;
 		}
-
-		return $this;
 	}
 
 	public function setValue($value) {
