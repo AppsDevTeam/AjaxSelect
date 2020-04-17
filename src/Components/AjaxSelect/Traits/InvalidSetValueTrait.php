@@ -50,7 +50,7 @@ trait InvalidSetValueTrait {
 			case AjaxSelect\DI\AjaxSelectExtension::INVALID_VALUE_MODE_EXCEPTION:
 				$set = \Nette\Utils\Strings::truncate(implode(', ', array_map(function ($s) { return var_export($s, TRUE); }, array_keys($this->items))), 70, '...');
 
-				throw new \Nette\InvalidArgumentException("Value '$values' is out of allowed set [$set] in field '{$this->name}'.");
+				throw new \Nette\InvalidArgumentException("Value '". (is_array($values) ? implode("', '", $values) : $values) ."' is out of allowed set [$set] in field '{$this->name}'.");
 
 			case AjaxSelect\DI\AjaxSelectExtension::INVALID_VALUE_MODE_EMPTY:
 				return $this instanceof AjaxSelect\Interfaces\IMultiSelectControl
