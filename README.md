@@ -165,3 +165,71 @@ If you ever need to change signal that is used in query URL, proceed as follows:
         handleGetAjaxItems as handleYourSignalName;
     }
     ```
+   
+## Troubleshooting
+
+###Dynamic form containers (like addDynamic and toMany)
+
+If you create a new form container which contains an input with AjaxEntity and you create it after calling `$ajaxEntityPoolService->invokeDone();` (which is called typically after form initialization), then the ajax search will not work properly.
+
+Example of such mistake:
+
+```php
+<?php // Form.php
+
+public function init($form) {
+
+    $form->addDynamic('address', function ($container) {
+        $container->addAjaxSelect('city', 'City', function ($ajaxEntity) {
+            $ajaxEntity
+                ->byCountryCode('CZ');
+        });
+    });
+    
+    // No container exists right now
+}
+
+```
+```latte
+{* Form.latte *}
+
+<div n:foreach="[0, 1, 2] as $addressIndex">
+    {* When you access $form['address'][$addressIndex], then the container, "city" input and its AjaxEntity are created *}
+    {label $form['address'][$addressIndex]['city'] /} {input $form['address'][$addressIndex]['city']}
+</div>
+```
+
+Right solution:
+
+
+```php
+<?php // Form.php
+
+public function init($form) {
+
+    $form->addDynamic('address', function ($container) {
+        $container->addAjaxSelect('city', 'City', function ($ajaxEntity) {
+            $ajaxEntity
+                ->byCountryCode('CZ');
+        });
+    });
+
+    // This will create 3 new containers, its "city" input and AjaxEntity
+    $form->setDefaults([
+        'address' => [
+            0 => [],
+            1 => [],
+            2 => [],
+        ],
+    ]);
+}
+```
+```latte
+{* Form.latte *}
+
+{* We render only those containers, which already exists. *}
+<div n:foreach="$form['address']->getContainers() as $container">
+    {label $container['city'] /} {input $container['city']}
+</div>
+```
+
