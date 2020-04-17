@@ -28,9 +28,6 @@ abstract class AbstractEntity {
 	/** @var AjaxSelect\Traits\AjaxServiceControlTrait|NULL */
 	protected $control = NULL;
 
-	/** @var mixed|NULL */
-	protected $backValue = NULL;
-
 	/**
 	 * @param array $options
 	 * @return $this
@@ -195,15 +192,6 @@ abstract class AbstractEntity {
 	}
 
 	/**
-	 * @return AjaxSelect\Interfaces\IAjaxServiceControl|mixed|NULL
-	 */
-	public function back() {
-		$this->done();
-
-		return $this->backValue ?: $this->getControl();
-	}
-
-	/**
 	 * @param string $name
 	 * @return $this
 	 */
@@ -240,15 +228,6 @@ abstract class AbstractEntity {
 	 */
 	public function getOptions() {
 		return $this->options;
-	}
-
-	/**
-	 * @param $value
-	 * @return $this
-	 */
-	public function setBackValue($value) {
-		$this->backValue = $value;
-		return $this;
 	}
 
 }

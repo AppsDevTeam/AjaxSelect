@@ -1,7 +1,5 @@
 # ADT AjaxSelect
 
-Disclaimer: This extension and/or its documentation is nowhere near complete. Proceed with caution.
-
 ## Installation
 
 1. Install via composer:
@@ -22,7 +20,7 @@ Disclaimer: This extension and/or its documentation is nowhere near complete. Pr
     class BasePresenter extends ... {
         use \ADT\Components\AjaxSelect\Traits\AjaxServiceSignalTrait;
     ```
-4. Include `assets/ajax-select.js` to your front-end build. **TODO**
+4. Include `assets/ajax-select.js` to your front-end build.
     
     ```html
     <script type="text/javascript" src="vendor/ajax-select.min.js"></script>
@@ -39,9 +37,9 @@ This extension adds following methods to `Nette\Forms\Container` and thus to all
     - dynamic select with one value
 - `addDynamicMultiSelect($name, $title, $items, $itemFactory = null, $config = [])`
     - dynamic select with multiple values
-- `addAjaxSelect($name, $title, $entityName = $name, $config = [])`
+- `addAjaxSelect($name, $title, $entityName = $name, $entitySetupCallback = NULL, $config = [])`
     - ajax select with one value
-- `addAjaxMultiSelect($name, $title, $entityName = $name, $config = [])`
+- `addAjaxMultiSelect($name, $title, $entityName = $name, $entitySetupCallback = NULL, $config = [])`
     - ajax select with multiple values
    
 ### Config
@@ -124,16 +122,19 @@ This instructs Nette to autoimplement a factory for your entity and tag it as `a
 Now you can use your AjaxEntity direcly from your AjaxSelect control on your Nette form:
 
 ```php
-$form->addAjaxSelect('user', 'Please select active user')
-    ->getAjaxEntity()
-        ->active(TRUE)
-    ->back()
+$form->addAjaxSelect('user', 'Please select active user', function (UserAjaxEntity $ajaxEntity) {
+    $ajaxEntity
+        ->active(TRUE);
+})
     ->setRequired(TRUE);
 
-$form->addAjaxSelect('inactiveUser', 'Please select inactive user', 'user')
-    ->getAjaxEntity()
+$form->addAjaxSelect('inactiveUser', 'Please select inactive user', 'user', function (UserAjaxEntity $ajaxEntity) {
+    $ajaxEntity
         ->active(FALSE);
+});
 ```
+
+Arguments `$entityName` and/or `$entitySetupCallback` can be omitted. You can omit `$entityName` if it's equal to control name (ie. first argument `$name`).
 
 Finally you have to call finalizing ajaxSelect after the form is attached to presenter.
 For example you can do it in your `BaseForm::attached($presenter)`
@@ -142,11 +143,6 @@ For example you can do it in your `BaseForm::attached($presenter)`
 /** @var \ADT\Components\AjaxSelect\Services\EntityPoolService $ajaxEntityPoolService */
 $ajaxEntityPoolService->invokeDone();
 ```
-
-You can omit third argument of `addAjaxSelect` or `addAjaxMultiSelect` if it's equal to control name (ie. first argument).
-
-Calling `getAjaxEntity()` on AjaxSelect returns instance of your AjaxEntity.
-Calling `back()` on AjaxEntity returns its parent. In this case, control itself is returned.
 
 AjaxEntity name, its options and query URL are serialized to control's `data-ajax-select` HTML attribute.
 

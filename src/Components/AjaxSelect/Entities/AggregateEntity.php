@@ -17,11 +17,6 @@ abstract class AggregateEntity extends AbstractEntity {
 	public function __construct(array $entities, $prefixSeparator = ':') {
 		$this->entities = $entities;
 		$this->prefixSeparator = $prefixSeparator;
-
-		// make back() return this entity
-		foreach ($this->entities as $entity) {
-			$entity->setBackValue($this);
-		}
 	}
 
 	/**

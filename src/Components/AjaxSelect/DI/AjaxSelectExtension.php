@@ -95,7 +95,30 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 
 			if (in_array($class, [AjaxSelect\AjaxSelect::class, AjaxSelect\AjaxMultiSelect::class])) {
 				// pro ajax entity
-				return function (\Nette\Forms\Container $container, $name, $label = NULL, $entityName = NULL, $config = []) use ($class, $serviceGetter, $globalConfig) {
+				return function (\Nette\Forms\Container $container, $name, $label = NULL, $entityName = NULL, $entitySetupCallback = NULL, $config = []) use ($class, $serviceGetter, $globalConfig) {
+
+					if (is_array($entityName) && $entitySetupCallback === null && $config === []) {
+						// $entityName and $entitySetupCallback are omitted
+
+						$config = $entityName;
+						$entityName = null;
+
+					} else if (is_callable($entityName) && $config == []) {
+						// $entityName is omitted
+
+						if (is_array($entitySetupCallback)) {
+							$config = $entitySetupCallback;
+						}
+						$entitySetupCallback = $entityName;
+						$entityName = null;
+
+					} else if (is_array($entitySetupCallback) && $config === []) {
+						// $entitySetupCallback is omitted
+
+						$config = $entitySetupCallback;
+						$entitySetupCallback = null;
+					}
+
 					/** @var AjaxSelect\AjaxSelect|AjaxSelect\DynamicSelect|mixed $control */
 					$control = new $class($label);
 
@@ -110,6 +133,10 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 					$ajaxService = $serviceGetter();
 					$ajaxEntity = $ajaxService->createEntity($entityName ? : $name, $control);
 					$control->setAjaxEntity($ajaxEntity);
+
+					if ($entitySetupCallback) {
+						call_user_func($entitySetupCallback, $ajaxEntity);
+					}
 
 					return $container[$name] = $control;
 				};
