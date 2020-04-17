@@ -168,7 +168,7 @@ If you ever need to change signal that is used in query URL, proceed as follows:
    
 ## Troubleshooting
 
-###Dynamic form containers (like addDynamic and toMany)
+### Dynamic form containers (like addDynamic and toMany)
 
 If you create a new form container which contains an input with AjaxEntity and you create it after calling `$ajaxEntityPoolService->invokeDone();` (which is called typically after form initialization), then the ajax search will not work properly.
 
