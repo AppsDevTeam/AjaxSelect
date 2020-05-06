@@ -10,7 +10,7 @@ trait InvalidValueTrait {
 
 	use InvalidSetValueTrait;
 
-	public function loadHttpData() {
+	public function loadHttpData(): void {
 		// trigger overriden setValue method
 
 		$this->value = $this->getHttpData(\Nette\Forms\Form::DATA_TEXT);
