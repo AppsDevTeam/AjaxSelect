@@ -35,8 +35,10 @@ This extension adds following methods to `Nette\Forms\Container` and thus to all
 
 - `addDynamicSelect($name, $title, $items, $itemFactory = null, $config = [])`
     - dynamic select with one value
+    - `$itemFactory`: `function (array $invalidValues, DynamicSelect $input)`
 - `addDynamicMultiSelect($name, $title, $items, $itemFactory = null, $config = [])`
     - dynamic select with multiple values
+    - `$itemFactory`: see `addDynamicSelect`
 - `addAjaxSelect($name, $title, $entityName = $name, $entitySetupCallback = NULL, $config = [])`
     - ajax select with one value
 - `addAjaxMultiSelect($name, $title, $entityName = $name, $entitySetupCallback = NULL, $config = [])`

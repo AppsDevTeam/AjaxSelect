@@ -41,7 +41,7 @@ trait ItemFactoryTrait {
 			$values = reset($values);
 		}
 
-		$item = call_user_func($this->itemFactory, $values);
+		$item = call_user_func($this->itemFactory, $values, $this);
 
 		if (empty($item)) {
 			return $this->handleInvalidValues($values);
