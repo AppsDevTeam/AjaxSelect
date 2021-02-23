@@ -5,6 +5,7 @@ namespace ADT\Components\AjaxSelect\Entities;
 use ADT\Components\AjaxSelect;
 use Nette\SmartObject;
 
+/** PŘEJMENOVAT NÁZEV, ABY TO ODPOVÍDALO ŽE SE TO TÝKÁ QUERYOBJECTU A NENÍ TO VE SKUTEČNOSTI ENTITA. VE WEBDEVU NAHODIT NÁZVY A ROZHODNEM NA CO SE TO PŘEJMENUJE */
 abstract class AbstractEntity {
 
 	use SmartObject;
@@ -58,7 +59,34 @@ abstract class AbstractEntity {
 	 * @param array $values
 	 * @return bool[] $value => $isValid
 	 */
-	public abstract function areValidValues(array $values);
+	public function areValidValues(array $values) {
+		// all values are invalid by default
+		$result = array_combine($values, array_fill(0, count($values), FALSE));
+
+		$control = $this->getControl();
+		$form = $control->getForm();
+
+		$query = $this->createQueryObject()
+			->byIds($values);
+
+		$this->filterQueryObject($query);
+
+		// if orByIdFilter is active and it is entity form, the value, which is set in entity->inputName is included in items. It needs to be only in entity form that has entity property in which we can find default value for orById
+		if ($this->config[AjaxSelect\DI\AjaxSelectExtension::CONFIG_OR_BY_ID_FILTER] && method_exists($form, 'getEntity') && !empty($form->getEntity())) {
+			$defaultValue = $form->getEntity()->{'get' . ucfirst($control->getName())}();
+
+			if ($defaultValue) {
+				$query->orById($defaultValue);
+			}
+		}
+
+		foreach ($query->fetch($this->getEntityManager()) as $row) {
+			// pouze selectnuté jsou validní
+			$result[$row->getId()] = TRUE;
+		}
+
+		return $result;
+	}
 
 	/**
 	 * @internal
@@ -75,7 +103,19 @@ abstract class AbstractEntity {
 	 * @param int $limit
 	 * @return array List of ids.
 	 */
-	public abstract function findValues($limit);
+	public function findValues($limit) {
+		$query = $this->createQueryObject();
+		$this->filterQueryObject($query);
+
+		$rows = $query
+			->fetch($this->getEntityManager())
+			->applyPaging(0, $limit)
+			->toArray();
+
+		return array_map(function ($row) {
+			return $row->id;
+		}, $rows);
+	}
 
 	/**
 	 * @internal
@@ -106,6 +146,21 @@ abstract class AbstractEntity {
 
 		return $result;
 	}
+
+	/**
+	 * @return \Kdyby\Doctrine\EntityManager
+	 */
+	protected abstract function getEntityManager();
+
+	/**
+	 * @return \Kdyby\Doctrine\QueryObject freshly created QO without filters
+	 */
+	protected abstract function createQueryObject();
+
+	/**
+	 * @param \Kdyby\Doctrine\QueryObject $query
+	 */
+	protected abstract function filterQueryObject(&$query);
 
 	/**
 	 * @param string $option

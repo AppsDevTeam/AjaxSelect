@@ -73,7 +73,13 @@ This AjaxEntity encapsulates `$itemFactory`'s behaviour but it can get much more
 
 ### Implement AjaxEntity
 
-First, create new class (ie. `UserAjaxEntity`) that derives from our `AbstractEntity`. In addition, We will need its factory, so create an interface (ie. `IUserAjaxEntityFactory`) too. Example:
+First, create new class (ie. `UserAjaxEntity`) that derives from our `\ADT\Components\AjaxSelect\Entities\AbstractEntity`. 
+
+`\ADT\Components\AjaxSelect\Entities\AbstractEntity` requires few functions to be implemented. See example below.
+
+In addition, we will need its factory, so create an interface (ie. `IUserAjaxEntityFactory`) too. 
+
+Example:
 
 ```php
 
@@ -86,7 +92,45 @@ interface IUserAjaxEntityFactory {
 
 class UserAjaxEntity extends \ADT\Components\AjaxSelect\Entities\AbstractEntity {
 
+    const OPTION_OR_BY_ID = 'orById';
+    const OPTION_BY_IDS = 'byIds';
     const OPTION_ACTIVE = 'active';
+    
+    /** @var \Kdyby\Doctrine\EntityManager */
+    protected $em;
+	
+    /** @var \App\Queries\IUserFactory This object is defined below in DynamicSelect implementation */
+    protected $userQueryFactory;
+
+    public function __construct(\Kdyby\Doctrine\EntityManager $em, \App\Queries\IUserFactory $userQueryFactory) {
+        $this->em = $em;
+        $this->userQueryFactory = $userQueryFactory;
+    }
+	
+    /**
+     * This function is required by \ADT\Components\AjaxSelect\Entities\AbstractEntity
+     * @return \Kdyby\Doctrine\EntityManager
+     */
+    protected function getEntityManager()
+    {
+        return $this->em;
+    }
+    
+    /**
+     * @param int|int[] $id
+     * @return $this
+     */
+    public function orById($id) {
+        return $this->set(static::OPTION_OR_BY_ID, $id);
+    }
+
+    /**
+     * @param array|int $ids
+     * @return $this
+     */
+    public function byIds($ids) {
+        return $this->set(static::OPTION_BY_IDS, $ids);
+    }
     
     public function active($bool) {
         // if $bool is TRUE, only active users are shown,
@@ -94,21 +138,34 @@ class UserAjaxEntity extends \ADT\Components\AjaxSelect\Entities\AbstractEntity 
         return $this->set(self::OPTION_ACTIVE, $bool);
     }
     
-    public function findValues($limit) {
-        $active = $this->get(self::OPTION_ACTIVE);
-        
-        // TODO return user ids depending on $active
-    }
-    
+    /**
+     * This function is required by \ADT\Components\AjaxSelect\Entities\AbstractEntity
+     * @param array $values 
+     * @return array
+     */
     public function formatValues($value) {
         // TODO return array of userId => userName
     }
     
-    public function isValidValue($value) {
-        $active = $this->get(self::OPTION_ACTIVE);
-        
-        // TODO check if passed ids are of active/inactive users,
-        // depending on $active
+    /**
+     * This function is required by \ADT\Components\AjaxSelect\Entities\AbstractEntity
+     * @internal
+     * @return Queries\User
+     */
+    protected function createQueryObject()
+    {
+        return $this->userQueryFactory->create();
+    }
+
+    /**
+     * This function is required by \ADT\Components\AjaxSelect\Entities\AbstractEntity
+     * @internal
+     * @param Queries\User $query
+     */
+    protected function filterQueryObject(&$query) {
+        if ($value = $this->get(static::OPTION_ACTIVE)) {
+            $query->byActive($value);
+        }
     }
 
 }
@@ -129,16 +186,18 @@ This instructs Nette to autoimplement a factory for your entity and tag it as `a
 Now you can use your AjaxEntity direcly from your AjaxSelect control on your Nette form:
 
 ```php
-$form->addAjaxSelect('user', 'Please select active user', function (UserAjaxEntity $ajaxEntity) {
+$form->addAjaxSelect('user', 'Active users with default user', function (UserAjaxEntity $ajaxEntity) {
     $ajaxEntity
         ->active(TRUE);
 })
     ->setRequired(TRUE);
 
-$form->addAjaxSelect('inactiveUser', 'Please select inactive user', 'user', function (UserAjaxEntity $ajaxEntity) {
+$form->addAjaxSelect('inactiveUser', 'Inactive users without default user', 'user', function (UserAjaxEntity $ajaxEntity) {
     $ajaxEntity
         ->active(FALSE);
-});
+}, [
+    AjaxSelectExtension::CONFIG_OR_BY_ID_FILTER => FALSE
+]);
 ```
 
 Arguments `$entityName` and/or `$entitySetupCallback` can be omitted. You can omit `$entityName` if it's equal to control name (ie. first argument `$name`).
