@@ -16,12 +16,15 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 	const AJAX_SERVICE_NAME = 'ajax';
 	const ENTITY_POOL_SERVICE_NAME = 'entityPool';
 
+	const CONFIG_OR_BY_ID_FILTER = 'orByIdFilter';
+
 	const ENTITY_FACTORY_TAG = 'ajax-select.entity-factory';
 
 	public function loadConfiguration() {
 		$this->config = $this->config + [
 			static::CONFIG_GET_ITEMS_SIGNAL_NAME => 'getAjaxItems',
 			static::CONFIG_INVALID_VALUE_MODE => static::INVALID_VALUE_MODE_EXCEPTION,
+			static::CONFIG_OR_BY_ID_FILTER => TRUE,
 		];
 
 		$builder = $this->getContainerBuilder();
@@ -122,15 +125,15 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 					/** @var AjaxSelect\AjaxSelect|AjaxSelect\DynamicSelect|mixed $control */
 					$control = new $class($label);
 
-					$config = array_intersect_key($config, array_flip([static::CONFIG_INVALID_VALUE_MODE])) + $globalConfig;
+					$config = static::processConfigOptions($config, $globalConfig, [static::CONFIG_INVALID_VALUE_MODE, static::CONFIG_OR_BY_ID_FILTER]);
 
 					// set invalid value mode
 					$control->setInvalidValueMode($config[static::CONFIG_INVALID_VALUE_MODE]);
 
 					// inject ajax entity
-
 					/** @var AjaxSelect\Services\AjaxService $ajaxService */
 					$ajaxService = $serviceGetter();
+					$ajaxService->setConfig($config);
 					$ajaxEntity = $ajaxService->createEntity($entityName ? : $name, $control);
 					$control->setAjaxEntity($ajaxEntity);
 
@@ -145,10 +148,36 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 
 				// pro dymanic select
 				return function (\Nette\Forms\Container $container, $name, $label = NULL, $items = NULL, $itemFactory = NULL, $config = []) use ($class, $serviceGetter, $globalConfig) {
+
+					$config = static::processConfigOptions($config, $globalConfig, [static::CONFIG_INVALID_VALUE_MODE, static::CONFIG_OR_BY_ID_FILTER]);
+
+					// if $items are not array of values, we have received query object
+					if ($items instanceof AjaxSelect\Interfaces\IQueryObject) {
+						// if orByIdFilter is active and it is entity form, the value, which is set in entity->inputName is included in items. It needs to be only in entity form that has entity property in which we can find default value for orById
+						if ($config[static::CONFIG_OR_BY_ID_FILTER] && method_exists($container, 'getEntity') && !empty($container->getEntity())) {
+							$defaultValue = $container->getEntity()->{'get' . ucfirst($name)}();
+
+							if ($defaultValue) {
+								$items->orById($defaultValue);
+							}
+						}
+
+						if ($items->callSelectPairsAuto()) {
+							$items->selectPairs();
+						}
+
+						// getting nested form container for entity manager
+						$formContainer = $container;
+						while (! method_exists($formContainer, 'getEntityMapper')) {
+							$formContainer = $formContainer->getParent();
+						}
+
+						// it needs to be fetched here, because \Nette\Forms\Controls\SelectBox constructor requires array passed in $items
+						$items = $items->fetch($formContainer->getEntityMapper()->getEntityManager());
+					}
+
 					/** @var AjaxSelect\AjaxSelect|AjaxSelect\DynamicSelect|mixed $control */
 					$control = new $class($label, $items);
-
-					$config = array_intersect_key($config, array_flip([static::CONFIG_INVALID_VALUE_MODE])) + $globalConfig;
 
 					// set invalid value mode
 					$control->setInvalidValueMode($config[static::CONFIG_INVALID_VALUE_MODE]);
@@ -177,5 +206,16 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 				lcfirst($string)
 			)
 		);
+	}
+
+	/**
+	 * @param array|string $config
+	 * @param array $globalConfig
+	 * @param array $availableOptions
+	 * @return array
+	 */
+	private static function processConfigOptions($config, array $globalConfig, array $availableOptions)
+	{
+		return array_intersect_key($config, array_flip($availableOptions)) + $globalConfig;
 	}
 }
