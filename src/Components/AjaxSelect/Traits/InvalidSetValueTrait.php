@@ -75,7 +75,7 @@ trait InvalidSetValueTrait {
 
 		// revert array to single value if needed
 		if (!$this instanceof AjaxSelect\Interfaces\IMultiSelectControl) {
-			$value = count($value)
+			$value = is_array($value) && count($value)
 				? $value[0]
 				: NULL;
 		}
