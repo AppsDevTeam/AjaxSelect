@@ -3,6 +3,7 @@
 namespace ADT\Components\AjaxSelect\Entities;
 
 use ADT\Components\AjaxSelect;
+use Nette\Application\UI\Presenter;
 use Nette\SmartObject;
 
 abstract class AbstractEntity {
@@ -197,9 +198,7 @@ abstract class AbstractEntity {
 		$control = $this->getControl();
 
 		if (/*$this->isDirty && */$control) { // TODO: set dirty = TRUE on value change
-			/** @var \Nette\Application\UI\Presenter $presenter */
-			$presenter = $control->lookup(\Nette\Application\UI\Presenter::class, FALSE);
-			if ($presenter) {
+			$control->monitor(Presenter::class, function ($presenter) use ($control) {
 				$getItemsSignal = $this->config[AjaxSelect\DI\AjaxSelectExtension::CONFIG_GET_ITEMS_SIGNAL_NAME];
 				$controlValue = $control->getValue();
 
@@ -227,7 +226,7 @@ abstract class AbstractEntity {
 
 				$control->setAttribute(static::DATA_ATTRIBUTE_NAME, $data);
 				$this->isDirty = FALSE;
-			}
+			});
 		}
 
 		return $this;

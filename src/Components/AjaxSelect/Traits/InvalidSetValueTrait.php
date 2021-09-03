@@ -35,7 +35,7 @@ trait InvalidSetValueTrait {
 		return $this;
 	}
 
-	protected abstract function getHttpData($type, $htmlTail = NULL);
+	protected abstract function getHttpData($type, ?string $htmlTail = NULL);
 	protected abstract function isDisabled();
 
 	/**
@@ -75,7 +75,7 @@ trait InvalidSetValueTrait {
 
 		// revert array to single value if needed
 		if (!$this instanceof AjaxSelect\Interfaces\IMultiSelectControl) {
-			$value = count($value)
+			$value = is_array($value) && count($value)
 				? $value[0]
 				: NULL;
 		}
@@ -83,9 +83,20 @@ trait InvalidSetValueTrait {
 		// try to assign value
 		return parent::setValue($value);
 	}
-	
-	public function getValue() {
-		return parent::getValue();
+
+	/**
+	 * Return type of `getValue` differs based on where is it used and because of strict typing, getValue can't
+	 * be implemented directly (return type of parent::getValue differs).
+	 *
+	 * @param string $name
+	 * @return mixed
+	 */
+	public function &__get(string $name) {
+		if ($name == 'value') {
+			$val = parent::getValue();
+			return $val;
+		}
+		return parent::__get($name);
 	}
 
 }
