@@ -48,7 +48,8 @@ This extension adds following methods to `Nette\Forms\Container` and thus to all
 
 ```php
 [
-	AjaxSelectExtension::CONFIG_INVALID_VALUE_MODE => AjaxSelectExtension::INVALID_VALUE_MODE_*,
+    AjaxSelectExtension::CONFIG_INVALID_VALUE_MODE => AjaxSelectExtension::INVALID_VALUE_MODE_*,
+    AjaxSelectExtension::CONFIG_OR_BY_ID_FILTER => TRUE,
 ]
 ```
 
@@ -58,17 +59,39 @@ This control allows passing unknown value to `$control->value` field. Doing so w
 
 The item factory can either return title for given value or empty value (`NULL`, empty string, zero etc.). Non-empty value is automatically appended to known list of valid values.
 
+DynamicSelect accepts array or `\Kdyby\Doctrine\QueryObject` that extends `\ADT\BaseQuery\BaseQuery` in `$items`.
+
+Following features are implemented if QO is passed:
+- Function `\ADT\BaseQuery\BaseQuery::callSelectPairsAuto()` defines if `\ADT\BaseQuery\BaseQuery::selectPairs()` function should be called automatically. `selectPairs` sets entity attributes as select key and value. 
+  - Default values in `\ADT\BaseQuery\BaseQuery` are `SELECT_PAIRS_KEY` = 'id' and `SELECT_PAIRS_VALUE` = null, which returns whole object, so you should override the value constant for your needs, for example to `name`. When calling `selectPairs` function or overriding the constant, you can also use entity getter name which returns more complex value. For example `nameWithEmail` which then calls function `getNameWithEmail` from entity object.
+  - Function `callSelectPairsAuto` should be expanded when custom fetch function in QO is defined, and we continue to process fetched data from default call of fetch function in `\ADT\BaseQuery\BaseQuery`. See the function in the DynamicSelect example below.
+- Entity in `\Kdyby\DoctrineForms\EntityForm` can have inactive default value set, which causes error of not allowed in selected items. Therefore, the automatic call of `\ADT\BaseQuery\BaseQuery::orById()` function is called, which sets this inactive value to items.
+  - `AjaxSelectExtension::CONFIG_OR_BY_ID_FILTER` can turn off this default call. 
+  - This function must be turned off for attributes that are not mapped by processed entity. For example if we are in `UserForm`. Entity `User` has properties `id`, `name` and `role`. In `UserForm` we can create dynamicSelect with orByIdFilter turned on for `role` property. But if we create dynamicSelect for custom item like `profession`, orByIdFilter must be turned off, because it's not mapped property of `User` entity.
+
 ### Ajax Select
 
 This control needs something we call AjaxEntity, and its factory. All user AjaxEntities need to derive from our `AbstractEntity` or `AggregateEntity`.
+ - if `AbstractEntity` is used, you must implement following functions:
+   - `createQueryObject` which returns created query object of specific entity that inherits from `\ADT\BaseQuery\BaseQuery`.
+   - `filterQueryObject`: in this function you call all filter functions from your QO. 
+   - `formatValues`: here you get the filtered data from your QO to format them to the desired form.
 
 This AjaxEntity encapsulates `$itemFactory`'s behaviour but it can get much more powerful.
+
+AjaxSelect also uses orByIdFilter, see `Dynamic Select`.
 
 ## Configuration
 
 ### Implement AjaxEntity
 
-First, create new class (ie. `UserAjaxEntity`) that derives from our `AbstractEntity`. In addition, We will need its factory, so create an interface (ie. `IUserAjaxEntityFactory`) too. Example:
+First, create new class (ie. `UserAjaxEntity`) that derives from our `\ADT\Components\AjaxSelect\Entities\AbstractEntity`. 
+
+`\ADT\Components\AjaxSelect\Entities\AbstractEntity` requires few functions to be implemented. See example below.
+
+In addition, we will need its factory, so create an interface (ie. `IUserAjaxEntityFactory`) too. 
+
+Example:
 
 ```php
 
@@ -81,7 +104,36 @@ interface IUserAjaxEntityFactory {
 
 class UserAjaxEntity extends \ADT\Components\AjaxSelect\Entities\AbstractEntity {
 
+    const OPTION_OR_BY_ID = 'orById';
+    const OPTION_BY_ID = 'byId';
     const OPTION_ACTIVE = 'active';
+    
+    /** @var \Kdyby\Doctrine\EntityManager */
+    protected $em;
+	
+    /** @var \App\Queries\IUserFactory This object is defined below in DynamicSelect implementation */
+    protected $userQueryFactory;
+
+    public function __construct(\Kdyby\Doctrine\EntityManager $em, \App\Queries\IUserFactory $userQueryFactory) {
+        $this->em = $em;
+        $this->userQueryFactory = $userQueryFactory;
+    }
+    
+    /**
+     * @param int|int[] $id
+     * @return $this
+     */
+    public function orById($id) {
+        return $this->set(static::OPTION_OR_BY_ID, $id);
+    }
+
+    /**
+     * @param int|int[] $id
+     * @return $this
+     */
+    public function byId($id) {
+        return $this->set(static::OPTION_BY_ID, $id);
+    }
     
     public function active($bool) {
         // if $bool is TRUE, only active users are shown,
@@ -89,21 +141,42 @@ class UserAjaxEntity extends \ADT\Components\AjaxSelect\Entities\AbstractEntity 
         return $this->set(self::OPTION_ACTIVE, $bool);
     }
     
-    public function findValues($limit) {
-        $active = $this->get(self::OPTION_ACTIVE);
-        
-        // TODO return user ids depending on $active
-    }
-    
+    /**
+     * This function is required by \ADT\Components\AjaxSelect\Entities\AbstractEntity
+     * @param array $values 
+     * @return array
+     */
     public function formatValues($value) {
         // TODO return array of userId => userName
     }
     
-    public function isValidValue($value) {
-        $active = $this->get(self::OPTION_ACTIVE);
+    /**
+     * This function is required by \ADT\Components\AjaxSelect\Entities\AbstractEntity
+     * @internal
+     * @return Queries\User
+     */
+    protected function createQueryObject()
+    {
+        return $this->userQueryFactory->create();
+    }
+
+    /**
+     * This function is required by \ADT\Components\AjaxSelect\Entities\AbstractEntity
+     * @internal
+     * @param Queries\User $query
+     */
+    protected function filterQueryObject(&$query) {
+        if ($value = $this->get(static::OPTION_OR_BY_ID)) {
+            $query->orById($value);
+        }
         
-        // TODO check if passed ids are of active/inactive users,
-        // depending on $active
+        if ($value = $this->get(static::OPTION_BY_ID)) {
+            $query->byId($value);
+        }
+        
+        if ($value = $this->get(static::OPTION_ACTIVE)) {
+            $query->byActive($value);
+        }
     }
 
 }
@@ -124,16 +197,18 @@ This instructs Nette to autoimplement a factory for your entity and tag it as `a
 Now you can use your AjaxEntity direcly from your AjaxSelect control on your Nette form:
 
 ```php
-$form->addAjaxSelect('user', 'Please select active user', function (UserAjaxEntity $ajaxEntity) {
+$form->addAjaxSelect('user', 'Active users with default user', function (UserAjaxEntity $ajaxEntity) {
     $ajaxEntity
         ->active(TRUE);
 })
     ->setRequired(TRUE);
 
-$form->addAjaxSelect('inactiveUser', 'Please select inactive user', 'user', function (UserAjaxEntity $ajaxEntity) {
+$form->addAjaxSelect('inactiveUser', 'Inactive users without default user', 'user', function (UserAjaxEntity $ajaxEntity) {
     $ajaxEntity
         ->active(FALSE);
-});
+}, [
+    AjaxSelectExtension::CONFIG_OR_BY_ID_FILTER => FALSE
+]);
 ```
 
 Arguments `$entityName` and/or `$entitySetupCallback` can be omitted. You can omit `$entityName` if it's equal to control name (ie. first argument `$name`).
@@ -147,6 +222,114 @@ $ajaxEntityPoolService->invokeDone();
 ```
 
 AjaxEntity name, its options and query URL are serialized to control's `data-ajax-select` HTML attribute.
+
+### Implement DynamicSelect with QueryObject
+
+First, create new class (ie. `User`) that derives from `\ADT\BaseQuery\BaseQuery`.
+
+In addition, We will need its factory, so create an interface (ie. `IUserFactory`) too. 
+
+Example:
+
+```php
+
+namespace App\Queries;
+
+interface IUserFactory {
+    /** @return User */
+    function create();
+}
+
+class User extends \ADT\BaseQuery\BaseQuery {
+
+    const OPTION_ACTIVE = 'active';
+    
+    protected $fetchWithDataEmail = FALSE;
+    
+    public function active() {
+        $this->filter[static::OPTION_ACTIVE] = function (\Kdyby\Doctrine\QueryBuilder $qb) {
+            $qb->andWhere('e.active = TRUE');
+        };
+        return $this;
+    }
+	
+    public function disableActiveFilter() {
+        unset($this->filter[static::OPTION_ACTIVE]);
+        return $this;
+    }
+    
+    protected function doCreateQuery(\Kdyby\Persistence\Queryable $repository) {
+        $qb = parent::doCreateQuery($repository);
+        $qb->addOrderBy('e.name');
+
+        return $qb;
+    }
+    
+    /**
+     * @param Queryable|null $repository
+     * @param int $hydrationMode
+     * @return array|\Kdyby\Doctrine\ResultSet|mixed|object|\stdClass|null
+     */
+    public function fetch(?Queryable $repository = null, $hydrationMode = AbstractQuery::HYDRATE_OBJECT)
+    {
+        $fetch = parent::fetch($repository, $hydrationMode);
+
+        if ($this->fetchWithDataEmail) {
+            $array = [];
+            foreach ($fetch as $person) {
+                $array[$person->getId()] = \Nette\Utils\Html::el('option')
+                    ->setAttribute('value', $person->getId())
+                    ->setHtml($person->getName())
+                    ->setAttribute('data-email', $person->getEmail());
+            }
+
+            $fetch = $array;
+        }
+
+        return $fetch;
+    }
+
+    /**
+     * @return $this
+     */
+    public function fetchOptionsWithEmail()
+    {
+        $this->fetchWithDataEmail = TRUE;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function callSelectPairsAuto()
+    {
+        return ! $this->fetchWithDataEmail && parent::callSelectPairsAuto();
+    }
+
+}
+```
+
+Now you can create DynamicSelect on your Nette form:
+
+```php
+// Active users with default user
+$entityForm->addDynamicSelect('user', 'Active users', $this->userQueryFactory->create()->active())
+    ->setRequired(TRUE);
+
+// All users without default user
+$entityForm->addDynamicSelect('allUser', 'All users', $this->userQueryFactory->create(), NULL, [
+    \ADT\Components\AjaxSelect\DI\AjaxSelectExtension::CONFIG_OR_BY_ID_FILTER => FALSE
+]);
+
+// Active users with email in label
+$entityForm->addDynamicSelect('userWithEmail', 'All users', $this->userQueryFactory->create()->selectPairs('nameWithEmail'));
+
+// Attribute that is not mapped so CONFIG_OR_BY_ID_FILTER must be turned off
+$entityForm->addDynamicSelect('profession', 'Profession', $this->userQueryFactory->create(), NULL, [
+    \ADT\Components\AjaxSelect\DI\AjaxSelectExtension::CONFIG_OR_BY_ID_FILTER => FALSE
+]);
+```
 
 ### Change signal name
 
