@@ -7,7 +7,8 @@
         "nette/forms": "^2.3",
 		"nette/di": "^2.3",
 		"nette/utils": "^2.4",
-		"nette/application": "*"
+		"nette/application": "*",
+	    "adt/base-query": "^1.7"
     },
 	"autoload": {
 		"psr-4": {
