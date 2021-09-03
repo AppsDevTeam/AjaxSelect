@@ -58,7 +58,27 @@ abstract class AbstractEntity {
 	 * @param array $values
 	 * @return bool[] $value => $isValid
 	 */
-	public abstract function areValidValues(array $values);
+	public function areValidValues(array $values) {
+		// all values are invalid by default
+		$result = array_combine($values, array_fill(0, count($values), FALSE));
+
+		$control = $this->getControl();
+		$form = $control->getForm();
+
+		$query = $this->createQueryObject()
+			->byId($values);
+
+		$this->filterQueryObject($query);
+
+		AjaxSelect\Traits\OrByIdFilterTrait::applyOrByIdFilter($this->config, $form, $control->getName(), $query);
+
+		foreach ($query->fetch() as $row) {
+			// pouze selectnuté jsou validní
+			$result[$row->getId()] = TRUE;
+		}
+
+		return $result;
+	}
 
 	/**
 	 * @internal
@@ -75,7 +95,19 @@ abstract class AbstractEntity {
 	 * @param int $limit
 	 * @return array List of ids.
 	 */
-	public abstract function findValues($limit);
+	public function findValues($limit) {
+		$query = $this->createQueryObject();
+		$this->filterQueryObject($query);
+
+		$rows = $query
+			->fetch()
+			->applyPaging(0, $limit)
+			->toArray();
+
+		return array_map(function ($row) {
+			return $row->getId();
+		}, $rows);
+	}
 
 	/**
 	 * @internal
@@ -106,6 +138,16 @@ abstract class AbstractEntity {
 
 		return $result;
 	}
+
+	/**
+	 * @return \ADT\BaseQuery\BaseQuery freshly created QO without filters
+	 */
+	protected abstract function createQueryObject();
+
+	/**
+	 * @param \ADT\BaseQuery\BaseQuery $query
+	 */
+	protected abstract function filterQueryObject($query);
 
 	/**
 	 * @param string $option

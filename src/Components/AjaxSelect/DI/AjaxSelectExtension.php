@@ -125,15 +125,15 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 					/** @var AjaxSelect\AjaxSelect|AjaxSelect\DynamicSelect|mixed $control */
 					$control = new $class($label);
 
-					$config = array_intersect_key($config, array_flip([static::CONFIG_INVALID_VALUE_MODE])) + $globalConfig;
+					$config = static::processConfigOptions($config, $globalConfig, [static::CONFIG_INVALID_VALUE_MODE, static::CONFIG_OR_BY_ID_FILTER]);
 
 					// set invalid value mode
 					$control->setInvalidValueMode($config[static::CONFIG_INVALID_VALUE_MODE]);
 
 					// inject ajax entity
-
 					/** @var AjaxSelect\Services\AjaxService $ajaxService */
 					$ajaxService = $serviceGetter();
+					$ajaxService->setConfig($config);
 					$ajaxEntity = $ajaxService->createEntity($entityName ? : $name, $control);
 					$control->setAjaxEntity($ajaxEntity);
 
