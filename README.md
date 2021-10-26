@@ -418,3 +418,8 @@ public function init($form) {
 </div>
 ```
 
+## ToDo
+
+### orById filtr pro zanořené selecty
+
+Pokud máme select uvnitř toMany nebo addDynamic, tak musí být nastaveno `AjaxSelectExtension::CONFIG_OR_BY_ID_FILTER => FALSE`, aby se knihovna nepokoušela přistoupit k atributu dle názvu selectu v hlavní entitě, což by skončilo chybou. Toto rozšíření orById filtru pro zanořené selecty by se dalo naimplementovat, že bychom si v kontejneru selectu zjistili, kam je select zanořený (může být víc než jedna úroveň zanoření) a podle toho bychom místo `$form->getEntity()->get{$atributeName}()` provolali všechny prvky zanoření, tedy `$form->getEntity()->get{$zanořenýPrvek}($indexPrvku)->...->get{$atributeName}()`
