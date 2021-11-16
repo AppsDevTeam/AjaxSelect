@@ -18,6 +18,8 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 
 	const CONFIG_OR_BY_ID_FILTER = 'orByIdFilter';
 
+	const CONFIG_TRANSLATOR = 'translator';
+
 	const ENTITY_FACTORY_TAG = 'ajax-select.entity-factory';
 
 	public function loadConfiguration() {
@@ -25,6 +27,7 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 			static::CONFIG_GET_ITEMS_SIGNAL_NAME => 'getAjaxItems',
 			static::CONFIG_INVALID_VALUE_MODE => static::INVALID_VALUE_MODE_EXCEPTION,
 			static::CONFIG_OR_BY_ID_FILTER => TRUE,
+			static::CONFIG_TRANSLATOR => TRUE,
 		];
 
 		$builder = $this->getContainerBuilder();
@@ -125,10 +128,15 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 					/** @var AjaxSelect\AjaxSelect|AjaxSelect\DynamicSelect|mixed $control */
 					$control = new $class($label);
 
-					$config = static::processConfigOptions($config, $globalConfig, [static::CONFIG_INVALID_VALUE_MODE, static::CONFIG_OR_BY_ID_FILTER]);
+					$config = static::processConfigOptions($config, $globalConfig, [static::CONFIG_INVALID_VALUE_MODE, static::CONFIG_OR_BY_ID_FILTER, static::CONFIG_TRANSLATOR]);
 
 					// set invalid value mode
 					$control->setInvalidValueMode($config[static::CONFIG_INVALID_VALUE_MODE]);
+
+					// set translator
+					if (!$config[static::CONFIG_TRANSLATOR]) {
+						$control->setTranslator(NULL);
+					}
 
 					// inject ajax entity
 					/** @var AjaxSelect\Services\AjaxService $ajaxService */
@@ -148,7 +156,7 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 
 				// pro dymanic select
 				return function (\Nette\Forms\Container $container, $name, $label = NULL, $items = NULL, $itemFactory = NULL, $config = []) use ($class, $serviceGetter, $globalConfig) {
-					$config = static::processConfigOptions($config, $globalConfig, [static::CONFIG_INVALID_VALUE_MODE, static::CONFIG_OR_BY_ID_FILTER]);
+					$config = static::processConfigOptions($config, $globalConfig, [static::CONFIG_INVALID_VALUE_MODE, static::CONFIG_OR_BY_ID_FILTER, static::CONFIG_TRANSLATOR]);
 
 					// if $items are not array of values, we have received query object
 					if ($items instanceof \ADT\BaseQuery\BaseQuery) {
@@ -167,6 +175,11 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 
 					// set invalid value mode
 					$control->setInvalidValueMode($config[static::CONFIG_INVALID_VALUE_MODE]);
+
+					// set translator
+					if (!$config[static::CONFIG_TRANSLATOR]) {
+						$control->setTranslator(NULL);
+					}
 
 					$control->setItemFactory($itemFactory);
 

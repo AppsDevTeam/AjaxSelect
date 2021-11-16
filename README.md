@@ -50,8 +50,11 @@ This extension adds following methods to `Nette\Forms\Container` and thus to all
 [
     AjaxSelectExtension::CONFIG_INVALID_VALUE_MODE => AjaxSelectExtension::INVALID_VALUE_MODE_*,
     AjaxSelectExtension::CONFIG_OR_BY_ID_FILTER => TRUE,
+    AjaxSelectExtension::CONFIG_TRANSLATOR => TRUE,
 ]
 ```
+
+`AjaxSelectExtension::CONFIG_TRANSLATOR`: Sets the automatic translation of select values on/off. Default is `TRUE`.
 
 ### Dynamic Select
 
