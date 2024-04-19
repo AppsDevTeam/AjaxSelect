@@ -10,7 +10,7 @@ abstract class AbstractEntity {
 
 	use SmartObject;
 
-	const DATA_ATTRIBUTE_NAME = 'data-ajax-select';
+	const DATA_ATTRIBUTE_NAME = 'data-adt-ajax-select';
 
 	const OPTION_QUERY = 'q';
 
