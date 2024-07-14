@@ -6,13 +6,15 @@ use ADT\Components\AjaxSelect;
 use Nette\Application\UI\Presenter;
 use Nette\SmartObject;
 
-abstract class AbstractEntity {
-
+abstract class AbstractEntity
+{
 	use SmartObject;
 
 	const DATA_ATTRIBUTE_NAME = 'data-adt-ajax-select';
-
 	const OPTION_QUERY = 'q';
+
+	public abstract function formatValues($values): array;
+	public abstract function hydrateValues($values): array;
 
 	/** @var string */
 	protected $name;
@@ -107,17 +109,8 @@ abstract class AbstractEntity {
 			->applyPaging(0, $limit)
 			->toArray();
 
-		return array_map(function ($row) {
-			return $row->getId();
-		}, $rows);
+		return $rows;
 	}
-
-	/**
-	 * @internal
-	 * @param array $values
-	 * @return array List of items.
-	 */
-	public abstract function formatValues($values);
 
 	/**
 	 * @internal
