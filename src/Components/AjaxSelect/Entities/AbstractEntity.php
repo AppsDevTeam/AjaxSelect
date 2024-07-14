@@ -18,10 +18,6 @@ abstract class AbstractEntity
 	public abstract function hydrateValues($values): array;
 
 	protected abstract function createQueryObject(): QueryObject;
-	/**
-	 * @param \ADT\BaseQuery\BaseQuery $query
-	 */
-	protected abstract function filterQueryObject($query);
 
 	/** @var string */
 	protected $name;
@@ -78,7 +74,9 @@ abstract class AbstractEntity
 		$query = $this->createQueryObject()
 			->byId($values);
 
-		$this->filterQueryObject($query);
+		if (method_exists($this, 'filterQueryObject')) {
+			$this->filterQueryObject($query);
+		}
 
 		if ($query instanceof AjaxSelect\Interfaces\OrdByIdFilterInterface) {
 			$query->applyOrByIdFilter($this->config, $form, $control->getName());
