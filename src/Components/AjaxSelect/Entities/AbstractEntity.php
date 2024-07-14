@@ -71,7 +71,9 @@ abstract class AbstractEntity {
 
 		$this->filterQueryObject($query);
 
-		AjaxSelect\Traits\OrByIdFilterTrait::applyOrByIdFilter($this->config, $form, $control->getName(), $query);
+		if ($query instanceof AjaxSelect\Interfaces\OrdByIdFilterInterface) {
+			$query->applyOrByIdFilter($this->config, $form, $control->getName());
+		}
 
 		foreach ($query->fetch() as $row) {
 			// pouze selectnuté jsou validní
