@@ -3,6 +3,7 @@
 namespace ADT\Components\AjaxSelect\Entities;
 
 use ADT\Components\AjaxSelect;
+use ADT\DoctrineComponents\QueryObject;
 use Nette\Application\UI\Presenter;
 use Nette\SmartObject;
 
@@ -15,6 +16,12 @@ abstract class AbstractEntity
 
 	public abstract function formatValues($values): array;
 	public abstract function hydrateValues($values): array;
+
+	protected abstract function createQueryObject(): QueryObject;
+	/**
+	 * @param \ADT\BaseQuery\BaseQuery $query
+	 */
+	protected abstract function filterQueryObject($query);
 
 	/** @var string */
 	protected $name;
@@ -134,16 +141,6 @@ abstract class AbstractEntity
 
 		return $result;
 	}
-
-	/**
-	 * @return \ADT\BaseQuery\BaseQuery freshly created QO without filters
-	 */
-	protected abstract function createQueryObject();
-
-	/**
-	 * @param \ADT\BaseQuery\BaseQuery $query
-	 */
-	protected abstract function filterQueryObject($query);
 
 	/**
 	 * @param string $option
