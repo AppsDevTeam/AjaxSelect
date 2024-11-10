@@ -125,18 +125,20 @@ abstract class AbstractEntity
 	public function formatJsonValues($values) {
 		$result = [ ];
 		$titles = $this->formatValues($values);
-
+		$count = count($titles);
+		$i = 1;
 		foreach ($titles as $id => $item) {
 			if (!is_array($item)) {
 				$item = [
 					'text' => $item,
 				];
 			}
-
 			$item['id'] = $id;
+			$item['aria-posinset'] = $i;
+			$item['aria-setsize'] = $count;
 			$result[] = $item;
+			$i++;
 		}
-
 		return $result;
 	}
 
