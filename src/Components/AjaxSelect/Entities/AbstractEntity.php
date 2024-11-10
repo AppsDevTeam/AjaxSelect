@@ -3,16 +3,21 @@
 namespace ADT\Components\AjaxSelect\Entities;
 
 use ADT\Components\AjaxSelect;
+use ADT\DoctrineComponents\QueryObject;
 use Nette\Application\UI\Presenter;
 use Nette\SmartObject;
 
-abstract class AbstractEntity {
-
+abstract class AbstractEntity
+{
 	use SmartObject;
 
 	const DATA_ATTRIBUTE_NAME = 'data-adt-ajax-select';
-
 	const OPTION_QUERY = 'q';
+
+	public abstract function formatValues($values): array;
+	public abstract function hydrateValues($values): array;
+
+	protected abstract function createQueryObject(): QueryObject;
 
 	/** @var string */
 	protected $name;
@@ -69,9 +74,13 @@ abstract class AbstractEntity {
 		$query = $this->createQueryObject()
 			->byId($values);
 
-		$this->filterQueryObject($query);
+		if (method_exists($this, 'filterQueryObject')) {
+			$this->filterQueryObject($query);
+		}
 
-		AjaxSelect\Traits\OrByIdFilterTrait::applyOrByIdFilter($this->config, $form, $control->getName(), $query);
+		if ($query instanceof AjaxSelect\Interfaces\OrdByIdFilterInterface) {
+			$query->applyOrByIdFilter($this->config, $form, $control->getName());
+		}
 
 		foreach ($query->fetch() as $row) {
 			// pouze selectnuté jsou validní
@@ -105,17 +114,8 @@ abstract class AbstractEntity {
 			->applyPaging(0, $limit)
 			->toArray();
 
-		return array_map(function ($row) {
-			return $row->getId();
-		}, $rows);
+		return $rows;
 	}
-
-	/**
-	 * @internal
-	 * @param array $values
-	 * @return array List of items.
-	 */
-	public abstract function formatValues($values);
 
 	/**
 	 * @internal
@@ -139,16 +139,6 @@ abstract class AbstractEntity {
 
 		return $result;
 	}
-
-	/**
-	 * @return \ADT\BaseQuery\BaseQuery freshly created QO without filters
-	 */
-	protected abstract function createQueryObject();
-
-	/**
-	 * @param \ADT\BaseQuery\BaseQuery $query
-	 */
-	protected abstract function filterQueryObject($query);
 
 	/**
 	 * @param string $option
