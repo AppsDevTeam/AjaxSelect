@@ -19,7 +19,7 @@ trait OrByIdFilterTrait {
 			$defaultValue = $form->getEntity()->{'get' . ucfirst($attributeName)}();
 
 			//It can be Kdyby\Doctrine\Collections\Readonly\ReadOnlyCollectionWrapper
-			if (method_exists($defaultValue, 'toArray')) {
+			if ($defaultValue && method_exists($defaultValue, 'toArray')) {
 				$defaultValue = $defaultValue->toArray();
 			}
 
