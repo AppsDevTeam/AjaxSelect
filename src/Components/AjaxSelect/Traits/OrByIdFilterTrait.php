@@ -4,15 +4,11 @@ namespace ADT\Components\AjaxSelect\Traits;
 
 use ADT\Components\AjaxSelect;
 
-trait OrByIdFilterTrait {
+trait OrByIdFilterTrait 
+{
+	public abstract function orById($id): static;
 
-	/**
-	 * @param array $config
-	 * @param \Nette\Forms\Container $form
-	 * @param string $attributeName
-	 * @param \ADT\BaseQuery\BaseQuery $query
-	 */
-	public static function applyOrByIdFilter(array $config, \Nette\Forms\Container $form, string $attributeName, \ADT\BaseQuery\BaseQuery $query)
+	public function applyOrByIdFilter(array $config, \Nette\Forms\Container $form, string $attributeName)
 	{
 		// if orByIdFilter is active and it is entity form, the value, which is set in entity->inputName is included in items.
 		if ($config[AjaxSelect\DI\AjaxSelectExtension::CONFIG_OR_BY_ID_FILTER] && method_exists($form, 'getEntity') && !empty($form->getEntity())) {
@@ -24,9 +20,8 @@ trait OrByIdFilterTrait {
 			}
 
 			if (!empty($defaultValue)) {
-				$query->orById($defaultValue);
+				$this->orById($defaultValue);
 			}
 		}
 	}
-
 }

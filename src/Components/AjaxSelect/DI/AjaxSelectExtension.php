@@ -160,7 +160,9 @@ class AjaxSelectExtension extends \Nette\DI\CompilerExtension {
 
 					// if $items are not array of values, we have received query object
 					if ($items instanceof \ADT\BaseQuery\BaseQuery) {
-						AjaxSelect\Traits\OrByIdFilterTrait::applyOrByIdFilter($config, $container, $name, $items);
+						if ($items instanceof AjaxSelect\Interfaces\OrdByIdFilterInterface) {
+							$items->applyOrByIdFilter($config, $container, $name);
+						}
 
 						if ($items->callSelectPairsAuto()) {
 							$items->selectPairs();
