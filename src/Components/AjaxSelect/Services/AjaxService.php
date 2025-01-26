@@ -32,7 +32,7 @@ class AjaxService {
 	 * @param AjaxSelect\Interfaces\IAjaxServiceControl $clientControl
 	 * @return AjaxSelect\Entities\AbstractEntity
 	 */
-	public function createEntity($entityName, AjaxSelect\Interfaces\IAjaxServiceControl $clientControl = NULL) {
+	public function createEntity($entityName, ?AjaxSelect\Interfaces\IAjaxServiceControl $clientControl = NULL) {
 		if ($entityName instanceof AjaxSelect\Entities\AbstractEntity) {
 			$entity = $entityName;
 		} else {
