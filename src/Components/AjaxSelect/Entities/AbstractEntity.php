@@ -15,7 +15,7 @@ abstract class AbstractEntity
 	const OPTION_QUERY = 'q';
 
 	public abstract function formatValues($values): array;
-	public abstract function hydrateValues($values): array;
+	public abstract function hydrateValues($values, array $formValues = []): array;
 
 	protected abstract function createQueryObject(): QueryObject;
 
@@ -122,9 +122,9 @@ abstract class AbstractEntity
 	 * @param array $values
 	 * @return array List of items.
 	 */
-	public function formatJsonValues($values) {
+	public function formatJsonValues($values, array $formValues = []) {
 		$result = [ ];
-		$titles = $this->formatValues($values);
+		$titles = $this->formatValues($this->hydrateValues($values, $formValues));
 		$count = count($titles);
 		$i = 1;
 		foreach ($titles as $id => $item) {
@@ -200,7 +200,8 @@ abstract class AbstractEntity
 						? $this->formatJsonValues(
 							is_array($controlValue)
 								? $controlValue
-								: [ $controlValue ]
+								: [ $controlValue ],
+							$control->getForm()->getUntrustedValues('array')
 						)
 						: [],
 					'queryParam' => static::OPTION_QUERY,
