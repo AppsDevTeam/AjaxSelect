@@ -53,7 +53,7 @@ trait AjaxServiceControlTrait {
 			$validValues = array_merge($validValues, $invalidValues);
 		}
 
-		$validItems = $this->getAjaxEntity()->formatValues($this->getAjaxEntity()->hydrateValues($validValues));
+		$validItems = $this->getAjaxEntity()->formatValues($this->getAjaxEntity()->hydrateValues($validValues, $this->getForm()->getValues('array')));
 
 		// add to list of valid values
 		$this->setItems($this->getItems() + $validItems);
