@@ -3,7 +3,7 @@
 namespace ADT\Components\AjaxSelect\Entities;
 
 use ADT\Components\AjaxSelect;
-use ADT\DoctrineComponents\QueryObject;
+use ADT\DoctrineComponents\QueryObject\QueryObject;
 use Nette\Application\UI\Presenter;
 use Nette\SmartObject;
 
