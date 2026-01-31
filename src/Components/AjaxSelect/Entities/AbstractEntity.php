@@ -201,7 +201,7 @@ abstract class AbstractEntity
 							is_array($controlValue)
 								? $controlValue
 								: [ $controlValue ],
-							$control->getForm()->getValues('array')
+							$control->getForm()->getValidatedValues('array')
 						)
 						: [],
 					'queryParam' => static::OPTION_QUERY,
