@@ -10,7 +10,7 @@
 		"nette/utils": "^3.0 | ^4.0",
 		"nette/application": "*",
 		"adt/doctrine-components": "^3.0",
-		"nette/forms": "^3.3"
+		"nette/forms": "^3.2.9"
 	},
 	"autoload": {
 		"psr-4": {
