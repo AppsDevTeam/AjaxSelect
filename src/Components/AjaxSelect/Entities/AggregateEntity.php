@@ -157,6 +157,22 @@ abstract class AggregateEntity extends AbstractEntity {
 		return $prefix . $this->prefixSeparator . $value;
 	}
 
+	/**
+	 * Aggregate entity has no single query object - values are resolved by nested entities.
+	 */
+	protected function createQueryObject(): \ADT\DoctrineComponents\QueryObject\QueryObject {
+		throw new \LogicException(static::class . ' aggregates nested entities and has no query object of its own.');
+	}
+
+	/**
+	 * @param array $values
+	 * @param array $formValues
+	 * @return array
+	 */
+	public function hydrateValues($values, array $formValues = []): array {
+		return $values;
+	}
+
 	public function areValidValues(array $values) {
 		// all values are invalid by default
 		$result = array_combine($values, array_fill(0, count($values), FALSE));
@@ -202,7 +218,7 @@ abstract class AggregateEntity extends AbstractEntity {
 	 * @param array $values
 	 * @return array List of items.
 	 */
-	public function formatValues($values) {
+	public function formatValues($values): array {
 		$byPrefix = $this->groupByPrefix($values);
 
 		$result = [ ];
@@ -222,7 +238,7 @@ abstract class AggregateEntity extends AbstractEntity {
 	 * @param array $values
 	 * @return array List of items.
 	 */
-	public function formatJsonValues($values) {
+	public function formatJsonValues($values, array $formValues = []) {
 		if (array_diff_key($values, $this->entities)) {
 			$grouped = TRUE;
 			$values = $this->groupByPrefix($values);
@@ -237,7 +253,7 @@ abstract class AggregateEntity extends AbstractEntity {
 				$group = $this->groupByPrefix($group)[$prefix];
 			}
 
-			$children = $this->entities[$prefix]->formatJsonValues($group);
+			$children = $this->entities[$prefix]->formatJsonValues($group, $formValues);
 
 			// prefix ids
 			$children = array_map(function ($row) use ($prefix) {
