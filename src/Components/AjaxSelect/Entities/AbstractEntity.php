@@ -109,12 +109,7 @@ abstract class AbstractEntity
 		$query = $this->createQueryObject();
 		$this->filterQueryObject($query);
 
-		$rows = $query
-			->fetch()
-			->applyPaging(0, $limit)
-			->toArray();
-
-		return $rows;
+		return $query->fetch($limit);
 	}
 
 	/**
