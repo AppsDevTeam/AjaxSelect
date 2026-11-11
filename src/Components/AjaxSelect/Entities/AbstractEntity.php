@@ -14,6 +14,12 @@ abstract class AbstractEntity
 	const DATA_ATTRIBUTE_NAME = 'data-adt-ajax-select';
 	const OPTION_QUERY = 'q';
 
+	/** Stands in for the HTML id in a cached items URL, see getItemsUrl(). */
+	private const HTML_ID_PLACEHOLDER = 'adtAjaxSelectHtmlId';
+
+	/** @var \WeakMap<Presenter, array<string, string>>|null items URL per presenter and signal */
+	private static ?\WeakMap $itemsUrls = null;
+
 	public abstract function formatValues($values): array;
 	public abstract function hydrateValues($values, array $formValues = []): array;
 
@@ -190,13 +196,13 @@ abstract class AbstractEntity
 				$controlValue = $control->getValue();
 
 				$data = [
-					'url' => $presenter->link($getItemsSignal . '!', ['htmlId' => $control->getHtmlId()]),
+					'url' => static::getItemsUrl($presenter, $getItemsSignal, $control->getHtmlId()),
 					'initialItems' => $controlValue
 						? $this->formatJsonValues(
 							is_array($controlValue)
 								? $controlValue
 								: [ $controlValue ],
-							$control->getForm()->getValidatedValues('array')
+							$this->getFormValues($control->getForm())
 						)
 						: [],
 					'queryParam' => static::OPTION_QUERY,
@@ -218,6 +224,39 @@ abstract class AbstractEntity
 		}
 
 		return $this;
+	}
+
+	/**
+	 * Form values passed to hydrateValues() when the value of a select is set or rendered.
+	 *
+	 * By default all values of the form. Collecting them walks every control of the form, and
+	 * it happens for every select whose value is set - a form with hundreds of selects (rows of
+	 * a document) then becomes quadratically slow. An entity whose hydrateValues() needs only
+	 * a few fields, or none, should override this and return just those.
+	 */
+	public function getFormValues(\Nette\Forms\Form $form): array {
+		return $form->getValidatedValues('array');
+	}
+
+	/**
+	 * URL the select loads its items from.
+	 *
+	 * The URL of every select on a page differs only in the htmlId parameter. Building it
+	 * with Presenter::link() for each select means walking the whole component tree of the
+	 * presenter every time (getGlobalState()), which makes a form with hundreds of selects
+	 * quadratically slow. The URL is therefore built once per presenter and signal and only
+	 * the htmlId is substituted.
+	 */
+	protected static function getItemsUrl(Presenter $presenter, string $signal, string $htmlId): string {
+		self::$itemsUrls ??= new \WeakMap();
+		$urls = self::$itemsUrls[$presenter] ?? [];
+
+		if (!isset($urls[$signal])) {
+			$urls[$signal] = $presenter->link($signal . '!', ['htmlId' => self::HTML_ID_PLACEHOLDER]);
+			self::$itemsUrls[$presenter] = $urls;
+		}
+
+		return str_replace(self::HTML_ID_PLACEHOLDER, urlencode($htmlId), $urls[$signal]);
 	}
 
 	/**
